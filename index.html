@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SecAI+ Practice Test</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">CompTIA SecAI+ CY0-001</p>
+        <h1>Practice Test</h1>
+      </div>
+      <div id="timer" class="timer" aria-live="polite">60:00</div>
+    </header>
+
+    <section id="start-view" class="panel">
+      <h2>60 questions. 60 minutes.</h2>
+      <p>This test runs entirely in your browser. Progress is stored locally on this device.</p>
+      <div id="history-summary" class="summary"></div>
+      <div class="actions">
+        <button id="start-btn" class="primary">Start new test</button>
+        <button id="resume-btn" hidden>Resume test</button>
+        <button id="history-btn">View progress</button>
+      </div>
+      <details>
+        <summary>Data controls</summary>
+        <div class="actions compact">
+          <button id="export-btn">Export progress</button>
+          <label class="button-label">Import progress<input id="import-input" type="file" accept="application/json" hidden></label>
+          <button id="reset-btn" class="danger">Reset local data</button>
+        </div>
+      </details>
+    </section>
+
+    <section id="exam-view" class="panel" hidden>
+      <div class="exam-meta">
+        <span id="question-count"></span>
+        <button id="flag-btn" class="small">Flag</button>
+      </div>
+      <h2 id="question-stem"></h2>
+      <form id="options" class="options"></form>
+      <fieldset class="confidence">
+        <legend>Confidence</legend>
+        <label><input type="radio" name="confidence" value="0"> 0 Guess</label>
+        <label><input type="radio" name="confidence" value="1"> 1 Uncertain</label>
+        <label><input type="radio" name="confidence" value="2"> 2 Probable</label>
+        <label><input type="radio" name="confidence" value="3"> 3 Certain</label>
+      </fieldset>
+      <div class="actions spread">
+        <button id="prev-btn" type="button">Previous</button>
+        <button id="navigator-btn" type="button">Question list</button>
+        <button id="next-btn" type="button" class="primary">Next</button>
+      </div>
+      <div id="navigator" class="navigator" hidden></div>
+      <button id="submit-btn" class="submit" type="button">Submit test</button>
+    </section>
+
+    <section id="results-view" class="panel" hidden>
+      <h2>Results</h2>
+      <div id="score-card" class="score-card"></div>
+      <div id="readiness-card" class="readiness"></div>
+      <div id="review-list" class="review-list"></div>
+      <div class="actions">
+        <button id="home-btn" class="primary">Return home</button>
+        <button id="progress-btn">View progress</button>
+      </div>
+    </section>
+
+    <section id="progress-view" class="panel" hidden>
+      <h2>Progress</h2>
+      <div id="progress-content"></div>
+      <div class="actions"><button id="progress-home-btn" class="primary">Return home</button></div>
+    </section>
+
+    <div id="error" class="error" hidden></div>
+  </main>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
