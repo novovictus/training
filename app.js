@@ -1,10 +1,8 @@
-const SOURCE='secai-plus-initial-diagnostic.md';
 const STORAGE_KEY='secai-plus-test-engine-v1';
 const EXAM_MINUTES=60;
-
 const $=id=>document.getElementById(id);
 const views=['start-view','exam-view','results-view','progress-view'];
-let bank=[];
+const bank=window.SECAI_QUESTION_BANK||[];
 let state=loadState();
 let active=state.activeAttempt;
 let index=0;
@@ -16,38 +14,12 @@ function loadState(){
 }
 function saveState(){state.activeAttempt=active;localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
 function showView(id){views.forEach(v=>$(v).hidden=v!==id);$('timer').style.visibility=id==='exam-view'?'visible':'hidden';}
-function domainFor(n){if(n<=20)return'1';if(n<=40)return'2';if(n<=50)return'3';return'4';}
-function parseBank(md){
-  const qBlock=md.split('# Questions')[1]?.split('# Answer key and target mapping')[0]||'';
-  const answers={};
-  const keyBlock=md.split('# Answer key and target mapping')[1]||'';
-  for(const line of keyBlock.split('\n')){
-    const m=line.match(/^\|\s*(\d+)\s*\|\s*([A-D])\s*\|\s*(.*?)\s*\|$/);
-    if(m)answers[Number(m[1])]={answer:m[2],target:m[3]};
-  }
-  const parts=qBlock.split(/^## Question (\d+)\s*$/m);
-  const out=[];
-  for(let i=1;i<parts.length;i+=2){
-    const number=Number(parts[i]);
-    const lines=parts[i+1].trim().split('\n').map(x=>x.trim()).filter(Boolean);
-    const optionStart=lines.findIndex(x=>/^[A-D]\.\s/.test(x));
-    if(optionStart<1)continue;
-    const stem=lines.slice(0,optionStart).join(' ');
-    const options={};
-    lines.slice(optionStart).forEach(line=>{const m=line.match(/^([A-D])\.\s+(.*)$/);if(m)options[m[1]]=m[2].replace(/\s{2,}$/,'');});
-    if(Object.keys(options).length===4&&answers[number])out.push({id:`Q${String(number).padStart(3,'0')}`,number,domain:domainFor(number),stem,options,...answers[number]});
-  }
-  if(out.length!==60)throw new Error(`Expected 60 questions but parsed ${out.length}.`);
-  return out;
-}
-async function init(){
+function init(){
   try{
-    const response=await fetch(SOURCE,{cache:'no-store'});
-    if(!response.ok)throw new Error(`Could not load ${SOURCE}.`);
-    bank=parseBank(await response.text());
+    if(bank.length!==60)throw new Error(`Expected 60 questions but loaded ${bank.length}.`);
     bind();
     renderHome();
-  }catch(error){$('error').hidden=false;$('error').textContent=`Test engine failed to load: ${error.message} Serve the repository through a web server rather than opening index.html directly.`;}
+  }catch(error){$('error').hidden=false;$('error').textContent=`Test engine failed to load: ${error.message}`;}
 }
 function bind(){
   $('start-btn').onclick=startNew;
