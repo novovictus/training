@@ -153,11 +153,13 @@ Current source and working files in the root of `main`:
 - `SecAI+ Practice Test V1.docx`
   - CompTIA-provided sample practice test used to infer question grammar and framing.
 - `secai-plus-initial-diagnostic.md`
-  - Initial objective decomposition and 60-question diagnostic.
+  - Initial objective decomposition and human-oriented 60-question diagnostic.
+- `secai-plus-question-bank-v1.md`
+  - Canonical v1 question bank for later test-engine consumption.
 - `README.md`
   - Project context, decisions, engineering log, and resume point.
 
-No directory structure, issue workflow, project board, or interactive interface has been created yet. The repository will remain flat until the amount and type of material justify additional structure.
+No directory structure, issue workflow, project board, interactive interface, static-site files, JavaScript, CSS, or GitHub Pages configuration has been created yet. The repository will remain flat until the amount and type of material justify additional structure.
 
 ## Initial diagnostic
 
@@ -179,11 +181,59 @@ It contains:
 
 A single 60-question run cannot independently isolate every one of the 72 decomposed targets. Some questions therefore test multiple adjacent targets. Future 60-question runs should rotate coverage while preserving the same timing and execution constraints.
 
+## Question bank v1 format
+
+`secai-plus-question-bank-v1.md` is the canonical machine-readable and human-readable representation of the first test.
+
+The file uses:
+
+- YAML front matter for bank-level metadata
+- Semantic versioning for the bank and schema
+- Stable bank identifier `secai-plus-cy0-001-v1`
+- Stable question identifiers `Q001` through `Q060`
+- Explicit question delimiters in HTML comments
+- Fixed metadata keys for each question
+- Fixed four-option labels `A` through `D`
+- A separate keyed answer and objective-mapping section
+- No application-specific HTML, JavaScript, or rendering assumptions
+
+The parser contract for v1 is:
+
+1. Read YAML front matter for bank metadata.
+2. Treat each `QUESTION_START` and `QUESTION_END` pair as one question record.
+3. Parse the metadata comment immediately after `QUESTION_START`.
+4. Read the question stem under `### Qnnn`.
+5. Parse exactly four options using the bold labels `**A.**` through `**D.**`.
+6. Read correct answers and mappings from the answer-key table by stable question ID.
+7. Ignore ordinary explanatory Markdown outside those defined structures.
+
+This keeps the bank directly readable in GitHub while avoiding brittle parsing based only on heading order or visual spacing.
+
+## Deferred online test engine plan
+
+The eventual target is a static test engine hosted with GitHub Pages. Implementation is intentionally deferred.
+
+The expected design direction is:
+
+- Use `secai-plus-question-bank-v1.md` as the source bank.
+- Parse or transform the bank during build time rather than duplicating questions manually in application code.
+- Present one question at a time or in a reviewable exam sequence.
+- Enforce or display the 60-minute run target.
+- Capture selected answer, confidence score, flagged status, and elapsed time.
+- Delay answer disclosure until submission.
+- Score by question, target, and domain.
+- Preserve missed-question and low-confidence analysis.
+- Support later banks and schema versions without breaking v1.
+- Keep source questions distinct from original generated questions.
+- Avoid exposing the answer key in the active test view even though the static repository contains it.
+
+No site implementation should begin until the desired interaction model, result persistence, answer-key exposure model, and public-versus-private deployment implications are decided.
+
 ## Current decisions
 
 The following decisions were made during the initial session:
 
-- The repository remains private.
+- The repository remains private during initial development.
 - The default branch is `main`.
 - Files remain in the repository root for now.
 - No scaffolding or folder hierarchy will be added prematurely.
@@ -194,6 +244,9 @@ The following decisions were made during the initial session:
 - AI is used as an examiner, tutor, adversarial reviewer, decomposer, and validation assistant.
 - Primary-source verification is required for regulatory, legal, standards, and version-sensitive claims.
 - Repository history serves as the engineering log and future resume mechanism.
+- The canonical initial bank is explicitly versioned as v1.
+- The bank must remain both deterministic to parse and comfortable to review in rendered Markdown.
+- GitHub Pages is the intended future delivery mechanism, but implementation is deferred.
 
 ## Recommended execution process
 
@@ -215,9 +268,9 @@ For the first diagnostic run:
 
 ## Resume point
 
-The repository and first diagnostic are initialized and ready.
+The source artifacts, objective decomposition, human-oriented diagnostic, and canonical v1 question bank are initialized. The question bank is ready to serve as the future back end for a static test engine, but no site implementation has begun.
 
-The next meaningful step is to take the initial 60-question diagnostic under timed conditions and preserve the responses, confidence values, completion time, and any question-quality objections. Those results will establish the first evidence-based gap map and drive the next test or study artifact.
+The next meaningful learning step remains taking the initial 60-question diagnostic under timed conditions and preserving responses, confidence values, completion time, and question-quality objections. The next engineering step, when intentionally resumed, is to define the test engine's interaction and persistence model before creating GitHub Pages files.
 
 ## Session log
 
@@ -232,3 +285,6 @@ The next meaningful step is to take the initial 60-question diagnostic under tim
 - Decomposed the objectives into 72 testable targets without assuming mastery.
 - Created and committed the initial 60-question diagnostic in `secai-plus-initial-diagnostic.md`.
 - Added this README to preserve project context and provide a reliable restart point for future sessions.
+- Created `secai-plus-question-bank-v1.md` as the canonical parseable bank.
+- Added stable IDs, explicit delimiters, versioned metadata, and a documented parser contract.
+- Recorded the future GitHub Pages test-engine direction without beginning implementation.
