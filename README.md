@@ -5,8 +5,7 @@ Private working repository for CompTIA SecAI+ CY0-001 preparation and practice-e
 ## Current state
 
 - `practice-test/` contains the static browser application.
-- `practice-test/questions.js` contains the unchanged 40-question legacy base.
-- `practice-test/questions-v2.js` adds 20 questions and activates the 60-question v2 diagnostic.
+- `practice-test/questions.js` contains the complete 60-question v2 diagnostic bank.
 - `test-banks/` contains deterministic application fixtures and a restricted private sample bank.
 
 The supplied CompTIA practice questions are isolated under `test-banks/private/` and must not be included in external packages.
@@ -36,7 +35,7 @@ Domain allocation:
 | 3.0 AI-assisted Security | 14 |
 | 4.0 AI Governance, Risk, and Compliance | 12 |
 
-The v2 bank preserves all 40 legacy questions and adds 20 targeted coverage questions. It is a working self-validation bank. Validate stems, distractors, answer keys, targets, and mappings during use and revise under zero-trust review.
+The v2 bank is a working self-validation bank. Validate stems, distractors, answer keys, targets, and mappings during use and revise under zero-trust review.
 
 The inherited canonical-answer imbalance remains. Displayed choices are randomized, but suspicious or weak items should be corrected based on content quality rather than rotating letters cosmetically.
 
@@ -52,8 +51,7 @@ The inherited canonical-answer imbalance remains. Displayed choices are randomiz
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
-│   ├── questions.js
-│   └── questions-v2.js
+│   └── questions.js
 └── test-banks/
     ├── README.md
     ├── test-bank-42.js

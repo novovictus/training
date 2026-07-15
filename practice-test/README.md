@@ -15,14 +15,13 @@ index.html
 styles.css
 app.js
 questions.js
-questions-v2.js
 ```
 
 Open `index.html` in Chrome.
 
 ## Active bank
 
-`questions.js` loads the unchanged 40-question legacy base. `questions-v2.js` adds 20 questions and replaces the loaded bank identity before `app.js` starts.
+`questions.js` is the complete self-contained 60-question v2 bank.
 
 ```text
 bankId: secai-plus-cy0-001-v2
@@ -56,6 +55,8 @@ window.SECAI_QUESTION_BANK = {
 
 The application validates metadata, unique question IDs, positive question numbers, stems, domains, targets, exactly four non-empty options, and one answer key from A through D.
 
+Validate stems, distractors, answer keys, targets, and mappings during use and revise under zero-trust review.
+
 ## State safety
 
 Progress is associated with `bankId` and `bankVersion`. Loading v2 after the legacy bank triggers a blocking mismatch warning. Export old progress if needed, then reset local progress for the v2 bank.
@@ -65,6 +66,8 @@ The application stores settings, mastery, attempts, and active-run state in brow
 ## Practice behavior
 
 The application supports randomized question and displayed-answer order, configurable run size and timer, confidence ratings, flags, resume, review, mastery, history, export, and import.
+
+The inherited canonical-answer imbalance remains. Displayed choices are randomized, but suspicious or weak items should be corrected based on content quality rather than rotating letters cosmetically.
 
 ## Fixtures
 
