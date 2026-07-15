@@ -4,10 +4,10 @@ The practice test is a static browser application. It does not require Python, N
 
 ## Download only the runnable files with curl
 
-Run this command from the directory where you want the four files saved:
+Run this command from the directory where you want the five files saved:
 
 ```powershell
-curl.exe -O "https://raw.githubusercontent.com/novovictus/training/main/practice-test/{index.html,styles.css,questions.js,app.js}"
+curl.exe -O "https://raw.githubusercontent.com/novovictus/training/main/practice-test/{index.html,styles.css,questions.js,app.js,review-fix.js}"
 ```
 
 `-O` saves each download using its existing filename. The braces expand the URL once for each listed file.
@@ -18,7 +18,7 @@ After the download completes, open `index.html` in a browser:
 .\index.html
 ```
 
-Keep all four files together in the same directory.
+Keep all five files together in the same directory.
 
 ## Download the repository with Git
 
