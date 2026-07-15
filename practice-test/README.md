@@ -1,6 +1,12 @@
 # Run the practice test locally
 
-The practice test is a static browser application. It requires no Python, Node.js, package installation, build process, backend, or web server. Opening `practice-test\index.html` directly through `file://` is supported.
+The practice test is a static browser application. It requires no build process, backend, package manager, or web server.
+
+## Validated browser
+
+Google Chrome is the validated browser.
+
+Direct `file://` operation and local-storage persistence have been tested only in Chrome. Edge, Firefox, Safari, and other browsers are currently unverified. Export progress before changing browsers, browser profiles, or the application directory.
 
 ## Required files
 
@@ -13,54 +19,30 @@ app.js
 questions.js
 ```
 
-`questions.js` is the active question bank. The other three files are the application.
+Open `index.html` in Chrome.
 
-## Download only the runnable files
+## Active bank
 
-Run this command from the directory where the files should be saved:
+`questions.js` is the active bank. It may be replaced with another compatible file using the same filename and schema.
 
-```powershell
-curl.exe -O "https://raw.githubusercontent.com/novovictus/training/main/practice-test/{index.html,styles.css,questions.js,app.js}"
-```
-
-Open the application:
-
-```powershell
-.\index.html
-```
-
-## Download the repository
-
-```powershell
-git clone --depth 1 https://github.com/novovictus/training.git
-```
-
-The runnable application is located at:
+The current active bank is:
 
 ```text
-training\practice-test\index.html
+bankId: secai-plus-cy0-001-legacy-draft-40
+bankVersion: 1.0.0
+questions: 40
 ```
 
-Progress is stored by the browser on that machine and browser profile.
+It contains the unchanged project-authored Q021-Q060 extension items from the original mixed bank. It is retained for application testing and content review and is not considered a valid final diagnostic. See `../QUESTION-BANK-REBUILD.md`.
 
-## Active question bank
-
-The application always loads:
-
-```text
-practice-test\questions.js
-```
-
-A compatible bank is installed by replacing that file with another bank that uses the same filename and schema. No changes to `app.js`, `index.html`, or `styles.css` are required.
-
-The bank assigns a structured data object to `window.SECAI_QUESTION_BANK`:
+## Portable bank schema
 
 ```javascript
 window.SECAI_QUESTION_BANK = {
   schemaVersion: 1,
   bankId: "unique-bank-id",
   bankVersion: "1.0.0",
-  title: "Human-readable bank title",
+  title: "Human-readable title",
   questions: [
     {
       id: "Q001",
@@ -80,161 +62,47 @@ window.SECAI_QUESTION_BANK = {
 };
 ```
 
-## Bank requirements
+The application validates bank metadata, unique question IDs, question numbers, stems, domains, targets, exactly four non-empty options, and an answer key of A-D.
 
-Every bank must provide:
+Use a new `bankId` for a logically different bank. Increment `bankVersion` whenever content or mappings change within the same bank.
 
-- `schemaVersion: 1`
-- a non-empty `bankId`
-- a non-empty `bankVersion`
-- a non-empty `title`
-- a non-empty `questions` array
+## State safety
 
-Every question must provide:
+Progress is associated with `bankId` and `bankVersion`. A different loaded bank triggers a blocking warning and requires an explicit reset. Incompatible progress imports are rejected.
 
-- a unique non-empty `id`
-- a positive integer `number`
-- string `domain`
-- string `target`
-- non-empty string `stem`
-- exactly four options named `A`, `B`, `C`, and `D`
-- non-empty option strings
-- an `answer` of `A`, `B`, `C`, or `D`
-
-The application validates the bank during startup and displays a visible error if the schema is invalid.
-
-## Bank identity and versioning
-
-Saved progress is associated with the loaded bank by `bankId` and `bankVersion`.
-
-Use these rules:
-
-- Use a different `bankId` for a logically different question bank.
-- Increment `bankVersion` whenever question text, options, answer keys, stable IDs, domains, or targets change within the same bank.
-- Do not reuse the same `bankId` and `bankVersion` for modified content.
-
-Reusing an unchanged identity for changed content can create undetected progress skew because the application has no content hash.
-
-When the loaded bank identity differs from stored progress, the application:
-
-- blocks normal startup
-- displays a bank mismatch warning
-- does not silently reuse mastery, attempts, settings, or an active run
-- requires an explicit local-progress reset before the loaded bank can be used
-
-Legacy version-2 progress without bank identity is treated as production-bank progress:
-
-```text
-bankId: secai-plus-cy0-001-v1
-bankVersion: 1.0.0
-```
-
-Progress exports include bank identity. Imports for another bank ID or version are rejected without partially changing local state.
+The application stores settings, mastery, attempts, and active-run state in browser local storage. Export progress before significant changes.
 
 ## Practice behavior
 
-Each new run:
+The application supports randomized question order, randomized displayed answer order, configurable run size and timer, confidence ratings, flags, resume, review, mastery, history, export, and import.
 
-- selects from the available questions
-- randomizes question order
-- randomizes answer order while preserving canonical answer mapping
-- excludes mastered questions by default
-- stores question and option order so resumed runs remain stable
+Runs are capped at the loaded bank size. The current 40-question legacy draft therefore cannot produce a run larger than 40.
 
-The configured run size is capped at the number of available questions. Larger banks default to a normal 60-question run. Smaller banks cannot create a run larger than the bank.
+## Deterministic fixtures
 
-A question is marked mastered after three correct answers. Unanswered questions do not increment mastery attempts.
+Public regression fixtures:
 
-Use **Customize** to configure:
-
-- question count
-- time limit in minutes
-- `0` minutes for no countdown or automatic submission
-- whether mastered questions are included
-
-Answered, flagged, and confidence-marked questions appear in review. Untouched unanswered questions are omitted.
-
-## Progress handling
-
-The browser stores:
-
-- settings
-- mastery
-- attempt history
-- active-run state
-- bank identity
-
-Use export before major application or bank changes. Import only into the matching bank identity and version.
-
-Resetting progress removes the locally stored state for the application. It does not modify any files.
-
-## Deterministic fixture banks
-
-The repository includes:
-
-- `test-banks\test-bank-42.js`
-- `test-banks\sample-bank-100.js`
-
-The 42-question bank tests behavior below the normal 60-question run size. The 100-question bank tests 60-question random selection from a larger source bank.
-
-Both fixtures rotate canonical answers through A, B, C, and D and use obvious deterministic text.
-
-## Swap and restore workflow
-
-Run these commands from the repository root.
-
-Back up the production bank:
-
-```powershell
-Copy-Item .\practice-test\questions.js .\practice-test\questions.production.js -Force
+```text
+../test-banks/test-bank-42.js
+../test-banks/sample-bank-100.js
 ```
 
-Install the 42-question fixture:
+Restricted supplied content is stored separately under `../test-banks/private/` and must not be included in external packages.
+
+## Swap workflow
+
+From the repository root:
 
 ```powershell
+Copy-Item .\practice-test\questions.js .\practice-test\questions.active.js -Force
 Copy-Item .\test-banks\test-bank-42.js .\practice-test\questions.js -Force
 ```
 
-Install the 100-question fixture:
+Restore:
 
 ```powershell
-Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
+Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
+Remove-Item .\practice-test\questions.active.js
 ```
 
-Restore the production bank:
-
-```powershell
-Copy-Item .\practice-test\questions.production.js .\practice-test\questions.js -Force
-Remove-Item .\practice-test\questions.production.js
-```
-
-Reload `practice-test\index.html` after every swap. A bank mismatch warning is expected when switching identities. Reset local progress only after confirming the active bank shown by the application.
-
-## Manual validation checklist
-
-For the production bank:
-
-- bank title, version, and 60-question count are shown
-- a normal 60-question run starts
-- existing production progress migrates without a reset
-
-For the 42-question fixture:
-
-- a mismatch warning appears after production use
-- reset enables the fixture
-- the displayed bank count is 42
-- customization is capped at 42
-- the run contains 42 questions
-
-For the 100-question fixture:
-
-- a mismatch warning appears after another bank
-- reset enables the fixture
-- the displayed bank count is 100
-- the default run contains 60 questions
-
-After restoring production:
-
-- the production identity is shown
-- the mismatch warning appears if fixture state remains
-- reset returns the application to clean production state
+Reload `index.html` after each swap. A bank mismatch warning is expected when identities differ.
