@@ -207,7 +207,9 @@ function startNew(){
   if(blocked)return;
   if(active&&!confirm('A practice run is already in progress. Replace it?'))return;
   let pool=eligibleQuestions();if(!pool.length){alert('All questions are mastered. Enable Include mastered questions to continue.');return;}
-  pool=shuffle(pool);const selected=pool.slice(0,Math.min(state.settings.questionCount,pool.length));const now=Date.now();
+  const configuredCount=state.settings.questionCount;
+  if(configuredCount>pool.length&&!confirm(`Only ${pool.length} questions are currently eligible because mastered questions are excluded. Start a ${pool.length}-question run?`))return;
+  pool=shuffle(pool);const selected=pool.slice(0,Math.min(configuredCount,pool.length));const now=Date.now();
   const items=selected.map(question=>({questionId:question.id,optionOrder:shuffle(OPTION_KEYS)}));
   active={id:`attempt-${now}`,startedAt:now,durationMinutes:state.settings.durationMinutes,expiresAt:state.settings.durationMinutes?now+state.settings.durationMinutes*60000:null,currentIndex:0,items,responses:Object.fromEntries(items.map(item=>[item.questionId,{answer:null,confidence:null,flagged:false}]))};
   index=0;saveState();startExam();
