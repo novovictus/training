@@ -1,44 +1,59 @@
 # Run the practice test locally
 
-The practice test is a static browser application. It does not require Python, Node.js, a web server, a build process, or an installation. Opening `practice-test\index.html` directly with `file://` remains supported.
+The practice test is a static browser application. It requires no Python, Node.js, package installation, build process, backend, or web server. Opening `practice-test\index.html` directly through `file://` is supported.
 
-## Download only the runnable files with curl
+## Required files
 
-Run this command from the directory where you want the four files saved:
+Keep these four files together:
+
+```text
+index.html
+styles.css
+app.js
+questions.js
+```
+
+`questions.js` is the active question bank. The other three files are the application.
+
+## Download only the runnable files
+
+Run this command from the directory where the files should be saved:
 
 ```powershell
 curl.exe -O "https://raw.githubusercontent.com/novovictus/training/main/practice-test/{index.html,styles.css,questions.js,app.js}"
 ```
 
-`-O` saves each download using its existing filename. The braces expand the URL once for each listed file.
-
-After the download completes, open `index.html` in a browser:
+Open the application:
 
 ```powershell
 .\index.html
 ```
 
-Keep all four files together in the same directory.
-
-## Download the repository with Git
+## Download the repository
 
 ```powershell
 git clone --depth 1 https://github.com/novovictus/training.git
 ```
 
-The runnable test will be located at:
+The runnable application is located at:
 
 ```text
 training\practice-test\index.html
 ```
 
-Open `index.html` directly in a browser. Progress is stored locally by that browser on that machine.
+Progress is stored by the browser on that machine and browser profile.
 
-## Active bank file
+## Active question bank
 
-`practice-test\questions.js` is the active question bank. A compatible bank is installed by replacing that file with another file of the same name.
+The application always loads:
 
-Compatible banks must assign the structured portable-bank object to `window.SECAI_QUESTION_BANK`:
+```text
+practice-test\questions.js
+```
+
+A compatible bank is installed by replacing that file with another bank that uses the same filename and schema. No changes to `app.js`, `index.html`, or `styles.css` are required.
+
+The bank assigns a structured data object to `window.SECAI_QUESTION_BANK`:
 
 ```javascript
 window.SECAI_QUESTION_BANK = {
@@ -65,7 +80,9 @@ window.SECAI_QUESTION_BANK = {
 };
 ```
 
-Every compatible bank must provide:
+## Bank requirements
+
+Every bank must provide:
 
 - `schemaVersion: 1`
 - a non-empty `bankId`
@@ -73,86 +90,112 @@ Every compatible bank must provide:
 - a non-empty `title`
 - a non-empty `questions` array
 
-Each question must provide:
+Every question must provide:
 
 - a unique non-empty `id`
 - a positive integer `number`
 - string `domain`
 - string `target`
 - non-empty string `stem`
-- exactly four options: `A`, `B`, `C`, and `D`
+- exactly four options named `A`, `B`, `C`, and `D`
 - non-empty option strings
-- an `answer` that references one of those four option keys
+- an `answer` of `A`, `B`, `C`, or `D`
 
-## Bank identity and saved progress
+The application validates the bank during startup and displays a visible error if the schema is invalid.
+
+## Bank identity and versioning
 
 Saved progress is associated with the loaded bank by `bankId` and `bankVersion`.
 
-- Progress exports include both values.
-- Imports for a different `bankId` or `bankVersion` are rejected.
-- If the loaded `questions.js` file does not match the bank associated with stored progress, the app shows a blocking warning and requires a reset before continuing.
-- The app does not silently reuse mastery, attempts, settings, or active-run state across different banks.
+Use these rules:
 
-Legacy version-2 production progress without bank identity is migrated as:
+- Use a different `bankId` for a logically different question bank.
+- Increment `bankVersion` whenever question text, options, answer keys, stable IDs, domains, or targets change within the same bank.
+- Do not reuse the same `bankId` and `bankVersion` for modified content.
 
-- `bankId: secai-plus-cy0-001-v1`
-- `bankVersion: 1.0.0`
+Reusing an unchanged identity for changed content can create undetected progress skew because the application has no content hash.
 
-That preserves existing production mastery and attempt history when the structured production bank is loaded for the first time.
+When the loaded bank identity differs from stored progress, the application:
+
+- blocks normal startup
+- displays a bank mismatch warning
+- does not silently reuse mastery, attempts, settings, or an active run
+- requires an explicit local-progress reset before the loaded bank can be used
+
+Legacy version-2 progress without bank identity is treated as production-bank progress:
+
+```text
+bankId: secai-plus-cy0-001-v1
+bankVersion: 1.0.0
+```
+
+Progress exports include bank identity. Imports for another bank ID or version are rejected without partially changing local state.
 
 ## Practice behavior
 
-Each new practice run:
+Each new run:
 
-- selects questions from the available bank
+- selects from the available questions
 - randomizes question order
-- randomizes answer order while preserving the correct-answer mapping
+- randomizes answer order while preserving canonical answer mapping
 - excludes mastered questions by default
-- stores the selected questions and answer order so a resumed run remains unchanged
+- stores question and option order so resumed runs remain stable
 
-Question-count behavior depends on the loaded bank:
+The configured run size is capped at the number of available questions. Larger banks default to a normal 60-question run. Smaller banks cannot create a run larger than the bank.
 
-- runs are capped at the number of questions available in the loaded bank
-- Customize does not preserve or allow a value above the loaded bank size
-- larger banks still default to a normal 60-question run
+A question is marked mastered after three correct answers. Unanswered questions do not increment mastery attempts.
 
-A question is marked mastered after it has been answered correctly three times. Unanswered questions do not increment mastery attempts.
+Use **Customize** to configure:
 
-Use **Customize** before starting a run to set:
+- question count
+- time limit in minutes
+- `0` minutes for no countdown or automatic submission
+- whether mastered questions are included
 
-- Number of questions
-- Time limit in minutes
-- `0` minutes to disable the countdown and automatic submission
-- Whether mastered questions should be included
+Answered, flagged, and confidence-marked questions appear in review. Untouched unanswered questions are omitted.
 
-Progress, mastery, settings, active runs, and attempt history are stored in browser local storage. Use the export and import controls to move or back up that data for the same bank.
+## Progress handling
 
-## Fixture banks
+The browser stores:
 
-Deterministic fixture banks are provided here:
+- settings
+- mastery
+- attempt history
+- active-run state
+- bank identity
+
+Use export before major application or bank changes. Import only into the matching bank identity and version.
+
+Resetting progress removes the locally stored state for the application. It does not modify any files.
+
+## Deterministic fixture banks
+
+The repository includes:
 
 - `test-banks\test-bank-42.js`
 - `test-banks\sample-bank-100.js`
 
-These fixtures use the same structured portable-bank format as the production bank. The 42-question fixture exercises the lower-than-60 case, and the 100-question fixture exercises the larger-than-60 case.
+The 42-question bank tests behavior below the normal 60-question run size. The 100-question bank tests 60-question random selection from a larger source bank.
+
+Both fixtures rotate canonical answers through A, B, C, and D and use obvious deterministic text.
 
 ## Swap and restore workflow
 
-Use the same copy and restore workflow documented in [test-banks\README.md](..\test-banks\README.md):
+Run these commands from the repository root.
 
 Back up the production bank:
 
 ```powershell
-Copy-Item .\practice-test\questions.js .\practice-test\questions.production.js
+Copy-Item .\practice-test\questions.js .\practice-test\questions.production.js -Force
 ```
 
-Test the 42-question bank:
+Install the 42-question fixture:
 
 ```powershell
 Copy-Item .\test-banks\test-bank-42.js .\practice-test\questions.js -Force
 ```
 
-Test the 100-question bank:
+Install the 100-question fixture:
 
 ```powershell
 Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
@@ -161,7 +204,37 @@ Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
 Restore the production bank:
 
 ```powershell
-Move-Item .\practice-test\questions.production.js .\practice-test\questions.js -Force
+Copy-Item .\practice-test\questions.production.js .\practice-test\questions.js -Force
+Remove-Item .\practice-test\questions.production.js
 ```
 
-Reload `practice-test\index.html` after each swap.
+Reload `practice-test\index.html` after every swap. A bank mismatch warning is expected when switching identities. Reset local progress only after confirming the active bank shown by the application.
+
+## Manual validation checklist
+
+For the production bank:
+
+- bank title, version, and 60-question count are shown
+- a normal 60-question run starts
+- existing production progress migrates without a reset
+
+For the 42-question fixture:
+
+- a mismatch warning appears after production use
+- reset enables the fixture
+- the displayed bank count is 42
+- customization is capped at 42
+- the run contains 42 questions
+
+For the 100-question fixture:
+
+- a mismatch warning appears after another bank
+- reset enables the fixture
+- the displayed bank count is 100
+- the default run contains 60 questions
+
+After restoring production:
+
+- the production identity is shown
+- the mismatch warning appears if fixture state remains
+- reset returns the application to clean production state
