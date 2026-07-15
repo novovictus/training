@@ -2,37 +2,18 @@
 
 ## Public deterministic fixtures
 
-These files are safe deterministic fixtures for application validation. They are not certification practice content.
+These files are safe application fixtures, not certification practice content:
 
-### `test-bank-42.js`
+- `test-bank-42.js`: 42 questions, Q001-Q042, rotating canonical answers A-D. Validates behavior below the normal 60-question run size.
+- `sample-bank-100.js`: 100 questions, Q001-Q100, rotating canonical answers A-D. Validates 60-question selection from a larger bank.
 
-- bank ID `test-bank-42`
-- 42 questions, Q001-Q042
-- fixed stems and options
-- canonical answers rotate A, B, C, D
-- validates behavior below the normal 60-question run size
-
-### `sample-bank-100.js`
-
-- bank ID `sample-bank-100`
-- 100 questions, Q001-Q100
-- fixed stems and options
-- canonical answers rotate A, B, C, D
-- validates 60-question selection from a larger bank
-
-Both fixtures exercise schema validation, randomized question and displayed-answer order, scoring, flags, confidence, review, mastery, resume, export/import, mismatch detection, and reset behavior.
+Both exercise schema validation, randomized question and displayed-answer order, scoring, flags, confidence, review, mastery, resume, export/import, mismatch detection, and reset behavior.
 
 ## Restricted private content
 
-`private/` contains supplied third-party assessment content retained only for private reference and validation.
+`private/comptia-sample-20.js` contains supplied third-party assessment content retained only for private reference and validation.
 
-Do not include this directory in external packages:
-
-```text
-test-banks/private/
-```
-
-See `private/README.md` for the restriction.
+Do not include `test-banks/private/` in any external package, release, shared archive, or published repository export.
 
 ## Swap workflow
 
@@ -56,6 +37,4 @@ Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Forc
 Remove-Item .\practice-test\questions.active.js
 ```
 
-Reload `practice-test/index.html` after each swap. A bank mismatch warning is expected when switching identities.
-
-Before committing, restore the intended active bank, remove temporary backups, and inspect `git status`.
+Reload `practice-test/index.html` after each swap. A bank mismatch warning is expected when identities differ. Before committing, restore the intended active bank, remove temporary backups, and inspect `git status`.
