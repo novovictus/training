@@ -1,4 +1,25 @@
-# Question-bank fixtures
+# Question banks and fixtures
+
+## Real SecAI+ banks
+
+- `secai-plus-minimal-independent-bank-v1.js` is the default 60-question bank loaded by `practice-test/index.html`.
+- `../practice-test/questions.js` is the alternate 60-question Diagnostic v2 bank.
+
+Both use the compact row authoring format documented in `../practice-test/README.md`. The row mapper produces the runtime object schema consumed by `app.js`.
+
+To load Diagnostic v2 instead, change the first script near the end of `practice-test/index.html` to:
+
+```html
+<script src="questions.js"></script>
+```
+
+To restore the default independent bank:
+
+```html
+<script src="../test-banks/secai-plus-minimal-independent-bank-v1.js"></script>
+```
+
+A bank mismatch warning is expected when identities differ.
 
 ## Public deterministic fixtures
 
@@ -15,7 +36,7 @@ Both exercise schema validation, randomized question and displayed-answer order,
 
 Do not include `test-banks/private/` in any external package, release, shared archive, or published repository export.
 
-## Swap workflow
+## Fixture swap workflow
 
 From the repository root:
 
@@ -30,11 +51,4 @@ Install the 100-question fixture:
 Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
 ```
 
-Restore the active bank:
-
-```powershell
-Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
-Remove-Item .\practice-test\questions.active.js
-```
-
-Reload `practice-test/index.html` after each swap. A bank mismatch warning is expected when identities differ. Before committing, restore the intended active bank, remove temporary backups, and inspect `git status`.
+When using this file-copy workflow, `practice-test/index.html` must temporarily load `questions.js`. Restore the intended bank reference, restore `questions.js` if backed up, remove temporary files, reload the page, and inspect `git status` before committing.
