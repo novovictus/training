@@ -8,25 +8,30 @@ Google Chrome is the validated browser. Direct `file://` operation and local-sto
 
 ## Required files
 
-Keep the repository layout intact and open `practice-test/index.html` in Chrome. The default page loads `../test-banks/secai-plus-minimal-independent-bank-v1.js`, then `app.js`.
+Keep these files together:
+
+```text
+index.html
+styles.css
+app.js
+questions.js
+```
+
+Open `index.html` in Chrome. The page loads `questions.js`, then `app.js`.
 
 ## Active bank
 
-The default bank is:
-
-```text
-bankId: secai-plus-cy0-001-minimal-independent-v1
-bankVersion: 1.0.0
-questions: 60
-```
-
-`questions.js` remains the alternate 60-question Diagnostic v2 bank:
+`questions.js` is the active 60-question Diagnostic v2 bank.
 
 ```text
 bankId: secai-plus-cy0-001-v2
 bankVersion: 2.0.0
 questions: 60
 ```
+
+Domain allocation is 10/24/14/12 for Domains 1 through 4.
+
+The alternate independent bank is stored at `../test-banks/secai-plus-minimal-independent-bank-v1.js`.
 
 ## Canonical authoring format
 
@@ -63,7 +68,7 @@ window.SECAI_QUESTION_BANK = {
 };
 ```
 
-The compact rows are only an authoring representation. The `rows.map(...)` block produces the same runtime question objects previously written out longhand, so the engine receives the same schema either way.
+The compact rows are only an authoring representation. The `rows.map(...)` block produces the same runtime question objects as the previous longhand format, so the engine receives the same schema either way.
 
 Row positions are fixed:
 
