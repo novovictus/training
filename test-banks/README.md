@@ -2,21 +2,23 @@
 
 ## Real SecAI+ banks
 
-- `secai-plus-minimal-independent-bank-v1.js` is the default 60-question bank loaded by `practice-test/index.html`.
-- `../practice-test/questions.js` is the alternate 60-question Diagnostic v2 bank.
+- `../practice-test/questions.js` is the active 60-question Diagnostic v2 bank loaded by `practice-test/index.html`.
+- `secai-plus-minimal-independent-bank-v1.js` is the alternate 60-question independent bank.
 
 Both use the compact row authoring format documented in `../practice-test/README.md`. The row mapper produces the runtime object schema consumed by `app.js`.
 
-To load Diagnostic v2 instead, change the first script near the end of `practice-test/index.html` to:
+To test the alternate bank without changing `index.html`, back up the active file and copy the alternate bank over `practice-test/questions.js`:
 
-```html
-<script src="questions.js"></script>
+```powershell
+Copy-Item .\practice-test\questions.js .\practice-test\questions.active.js -Force
+Copy-Item .\test-banks\secai-plus-minimal-independent-bank-v1.js .\practice-test\questions.js -Force
 ```
 
-To restore the default independent bank:
+Restore the active bank afterward:
 
-```html
-<script src="../test-banks/secai-plus-minimal-independent-bank-v1.js"></script>
+```powershell
+Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
+Remove-Item .\practice-test\questions.active.js
 ```
 
 A bank mismatch warning is expected when identities differ.
@@ -51,4 +53,11 @@ Install the 100-question fixture:
 Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
 ```
 
-When using this file-copy workflow, `practice-test/index.html` must temporarily load `questions.js`. Restore the intended bank reference, restore `questions.js` if backed up, remove temporary files, reload the page, and inspect `git status` before committing.
+Restore the active bank:
+
+```powershell
+Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
+Remove-Item .\practice-test\questions.active.js
+```
+
+Reload `practice-test/index.html` after each swap. Before committing, restore `questions.js`, remove temporary files, and inspect `git status`.
