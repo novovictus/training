@@ -99,7 +99,42 @@ The application stores settings, mastery, attempts, and active-run state in brow
 
 ## Practice behavior
 
-The application supports randomized question and displayed-answer order, configurable run size and timer, confidence ratings, flags, resume, review, mastery, history, export, and import.
+The application supports randomized question and displayed-answer order, configurable run size and timer, confidence ratings, flags, per-question free-form notes, resume, review, mastery, history, export, and import.
+
+## Per-question notes
+
+Each active question includes one optional multiline `Notes` field.
+
+- Notes belong to the specific run response, not to the base question bank.
+- Notes autosave into the active run through the same local-storage state used for answers, flags, and confidence.
+- Notes are restored when moving between questions.
+- Notes are restored after reloading the page and resuming an interrupted run.
+- Notes do not affect scoring, mastery, answer randomization, question randomization, confidence, or flag behavior.
+
+Older saved state without note fields remains compatible. Missing or invalid note values are treated as empty strings when a run is restored.
+
+## Run export
+
+Completed runs can be exported manually from the results view with `Export run`.
+
+- Export is manual. Submitting a run does not automatically download a file.
+- The exported filename uses the active bank ID plus a local timestamp, for example:
+
+```text
+secai-plus-cy0-001-v2_run_2026-07-15_214327.json
+```
+
+- The exported record includes the active bank identity and base-bank question count.
+- The exported record includes run metadata, run summary totals, per-domain statistics, and one record for every presented question.
+- Per-question export data includes the question identifiers and content shown to the engine, canonical answers, displayed option order, selected answer, correctness, confidence, flag state, and the free-form note.
+- Unanswered questions are still exported.
+- Displayed option order is preserved exactly from the completed run so the export can reconstruct what the user saw.
+
+## Run export versus progress export
+
+`Export run` writes one completed run as a self-contained record.
+
+`Export progress` still writes the full application state, including settings, mastery, history, active-run state, and any active or completed notes. `Import progress` continues to accept older exports that do not contain note fields.
 
 Canonical-answer imbalance must be corrected through content review, not cosmetic letter rotation. Displayed choices are randomized during each run.
 

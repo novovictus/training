@@ -60,6 +60,9 @@
         <label><input type="radio" name="confidence" value="2"> 2 Probable</label>
         <label><input type="radio" name="confidence" value="3"> 3 Certain</label>
       </fieldset>
+      <label class="notes-field" for="question-note">Notes
+        <textarea id="question-note" rows="4" placeholder="Optional run-specific notes"></textarea>
+      </label>
       <div class="actions spread"><button id="prev-btn" type="button">Previous</button><button id="navigator-btn" type="button">Question list</button><button id="next-btn" type="button" class="primary">Next</button></div>
       <div id="navigator" class="navigator" hidden></div>
       <button id="submit-btn" class="submit" type="button">Submit practice</button>
@@ -67,7 +70,7 @@
 
     <section id="results-view" class="panel" hidden>
       <h2>Results</h2><div id="score-card" class="score-card"></div><div id="readiness-card" class="readiness"></div><div id="review-list" class="review-list"></div>
-      <div class="actions"><button id="home-btn" class="primary">Return home</button><button id="progress-btn">View progress</button></div>
+      <div class="actions"><button id="home-btn" class="primary">Return home</button><button id="progress-btn">View progress</button><button id="export-run-btn">Export run</button></div>
     </section>
 
     <section id="progress-view" class="panel" hidden>
