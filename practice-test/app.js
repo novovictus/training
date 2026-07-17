@@ -298,7 +298,10 @@ function exportRun(result){
   if(blocked||!result)return;
   clearError();
   const exportedAt=new Date();
-  downloadJson(buildRunExport(result,exportedAt),buildRunFilename(exportedAt));
+  const exportRecord=buildRunExportRecord(result,exportedAt);
+  const filenameBase=buildRunFilenameBase(exportedAt);
+  downloadJson(exportRecord,`${filenameBase}.json`);
+  downloadText(buildRunTextReport(exportRecord),`${filenameBase}.txt`);
 }
 
 function exportProgress(){
@@ -336,14 +339,13 @@ function sanitizeNote(value){return typeof value==='string'?value:'';}
 
 function hasNote(note){return sanitizeNote(note).trim().length>0;}
 
-function buildRunFilename(exportedAt){
-  const localTimestamp=`${exportedAt.getFullYear()}-${String(exportedAt.getMonth()+1).padStart(2,'0')}-${String(exportedAt.getDate()).padStart(2,'0')}_${String(exportedAt.getHours()).padStart(2,'0')}${String(exportedAt.getMinutes()).padStart(2,'0')}${String(exportedAt.getSeconds()).padStart(2,'0')}`;
-  return`${sanitizeFilenamePart(bankConfig.bankId)}_run_${localTimestamp}.json`;
-}
+function buildRunFilenameBase(exportedAt){return`${sanitizeFilenamePart(bankConfig.bankId)}_run_${buildLocalTimestamp(exportedAt)}`;}
+
+function buildLocalTimestamp(exportedAt){return`${exportedAt.getFullYear()}-${String(exportedAt.getMonth()+1).padStart(2,'0')}-${String(exportedAt.getDate()).padStart(2,'0')}_${String(exportedAt.getHours()).padStart(2,'0')}${String(exportedAt.getMinutes()).padStart(2,'0')}${String(exportedAt.getSeconds()).padStart(2,'0')}`;}
 
 function sanitizeFilenamePart(value){return String(value).replace(/[^A-Za-z0-9._-]+/g,'-');}
 
-function buildRunExport(result,exportedAt){
+function buildRunExportRecord(result,exportedAt){
   const answeredCount=result.items.filter(item=>item.answer).length;
   const unansweredCount=result.items.length-answeredCount;
   const incorrectCount=result.items.filter(item=>item.answer&&!item.correct).length;
@@ -408,8 +410,88 @@ function buildRunExport(result,exportedAt){
   };
 }
 
+function buildRunTextReport(record){
+  const lines=[
+    `${record.bank.title}`,
+    `Bank ID: ${record.bank.bankId}`,
+    `Bank version: ${record.bank.bankVersion}`,
+    `Base-bank question count: ${record.bank.questionCount}`,
+    `Attempt ID: ${record.run.attemptId}`,
+    `Start time: ${record.run.startedAt}`,
+    `Finish time: ${record.run.finishedAt}`,
+    `Export time: ${record.run.exportedAt}`,
+    `Duration seconds: ${record.run.durationSeconds}`,
+    `Configured question count: ${record.run.configuredQuestionCount}`,
+    `Configured time limit: ${record.run.configuredTimeLimitMinutes}`,
+    `Expired: ${record.run.expired?'Yes':'No'}`,
+    '',
+    'Run summary',
+    `Total presented: ${record.run.totalPresented}`,
+    `Total answered: ${record.run.totalAnswered}`,
+    `Total unanswered: ${record.run.totalUnanswered}`,
+    `Total correct: ${record.run.totalCorrect}`,
+    `Total incorrect: ${record.run.totalIncorrect}`,
+    `Score percentage: ${record.run.scorePercent}`,
+    `Flagged-question count: ${record.run.flaggedQuestionCount}`,
+    `Noted-question count: ${record.run.notedQuestionCount}`,
+    '',
+    'Domain summary'
+  ];
+  Object.entries(record.domains).forEach(([domain,stats])=>{
+    lines.push(`Domain ${domain}`);
+    lines.push(`Presented: ${stats.presented}`);
+    lines.push(`Answered: ${stats.answered}`);
+    lines.push(`Unanswered: ${stats.unanswered}`);
+    lines.push(`Correct: ${stats.correct}`);
+    lines.push(`Incorrect: ${stats.incorrect}`);
+    lines.push(`Percentage correct: ${stats.percentCorrect}`);
+    lines.push('');
+  });
+  record.questions.forEach(question=>{
+    const note=sanitizeNote(question.note);
+    lines.push('===============================================================================');
+    lines.push(`Question ${question.runPosition} of ${record.run.totalPresented}`);
+    lines.push(`Question ID: ${question.questionId}`);
+    lines.push(`Bank question: ${question.questionNumber}`);
+    lines.push(`Domain: ${question.domain}`);
+    lines.push(`Target: ${question.target}`);
+    lines.push('');
+    lines.push('Question:');
+    lines.push(question.stem);
+    lines.push('');
+    lines.push('Canonical options:');
+    lines.push(`A. ${question.options.A}`);
+    lines.push(`B. ${question.options.B}`);
+    lines.push(`C. ${question.options.C}`);
+    lines.push(`D. ${question.options.D}`);
+    lines.push(`Displayed order: ${question.displayOrder.join(', ')}`);
+    lines.push(`Correct answer: ${question.correctAnswer}`);
+    lines.push(`Displayed correct answer: ${question.displayedCorrectAnswer??'Unanswered'}`);
+    lines.push(`Selected answer: ${question.selectedAnswer??'Unanswered'}`);
+    lines.push(`Displayed selected answer: ${question.displayedSelectedAnswer??'Unanswered'}`);
+    lines.push(`Answered: ${question.answered?'Yes':'No'}`);
+    lines.push(`Correct: ${question.correct?'Yes':'No'}`);
+    lines.push(`Incorrect: ${question.incorrect?'Yes':'No'}`);
+    lines.push(`Confidence: ${question.confidence??'None'}`);
+    lines.push(`Flagged: ${question.flagged?'Yes':'No'}`);
+    lines.push(`Newly mastered: ${question.newlyMastered?'Yes':'No'}`);
+    lines.push(`Note present: ${hasNote(note)?'Yes':'No'}`);
+    lines.push('');
+    lines.push('Note:');
+    lines.push(note);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
 function downloadJson(value,filename){
-  const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=filename;link.click();URL.revokeObjectURL(link.href);
+  downloadFile(JSON.stringify(value,null,2),filename,'application/json');
+}
+
+function downloadText(value,filename){downloadFile(value,filename,'text/plain;charset=utf-8');}
+
+function downloadFile(value,filename,type){
+  const blob=new Blob([value],{type}),link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=filename;link.click();URL.revokeObjectURL(link.href);
 }
 
 function toIsoString(value){return new Date(value).toISOString();}

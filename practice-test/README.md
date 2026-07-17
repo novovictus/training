@@ -117,18 +117,25 @@ Older saved state without note fields remains compatible. Missing or invalid not
 
 Completed runs can be exported manually from the results view with `Export run`.
 
-- Export is manual. Submitting a run does not automatically download a file.
-- The exported filename uses the active bank ID plus a local timestamp, for example:
+- Export is manual. Submitting a run does not automatically download files.
+- Each `Export run` click creates two files from the same completed run:
+  - the existing machine-readable JSON run record
+  - a complete human-readable plain-text report
+- Both files share one local timestamp generated once per click, for example:
 
 ```text
 secai-plus-cy0-001-v2_run_2026-07-15_214327.json
+secai-plus-cy0-001-v2_run_2026-07-15_214327.txt
 ```
 
-- The exported record includes the active bank identity and base-bank question count.
-- The exported record includes run metadata, run summary totals, per-domain statistics, and one record for every presented question.
+- The JSON file remains the authoritative machine-readable run record. Its schema is unchanged.
+- The text report contains a complete human-readable representation of the same run.
+- Both formats include the active bank identity and base-bank question count.
+- Both formats include run metadata, run summary totals, per-domain statistics, and one record for every presented question.
 - Per-question export data includes the question identifiers and content shown to the engine, canonical answers, displayed option order, selected answer, correctness, confidence, flag state, and the free-form note.
-- Unanswered questions are still exported.
+- Every presented question is included, including unanswered and unnoted questions.
 - Displayed option order is preserved exactly from the completed run so the export can reconstruct what the user saw.
+- In the text report only, `Note present: Yes` or `No` is derived from the trimmed note string. Each question also always includes a separate `Note:` field.
 
 ## Run export versus progress export
 
