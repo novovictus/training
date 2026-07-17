@@ -16,7 +16,7 @@ The supplied CompTIA practice questions are isolated under `test-banks/private/`
 
 Open `practice-test/index.html` in Google Chrome. Chrome is the only validated browser. Direct `file://` operation and local-storage persistence in other browsers are unverified.
 
-The application supports randomized question and displayed-answer order, configurable runs, timers, flags, confidence ratings, resume, review, mastery, history, export/import, and bank identity mismatch protection.
+The application supports randomized question and displayed-answer order, configurable runs, timers, flags, confidence ratings, per-question notes, resume, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
 
 See `practice-test/README.md` for operation, compact row authoring, runtime schema, and state-safety details.
 

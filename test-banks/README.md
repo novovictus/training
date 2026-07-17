@@ -30,7 +30,7 @@ These files are safe application fixtures, not certification practice content:
 - `test-bank-42.js`: 42 questions, Q001-Q042, rotating canonical answers A-D. Validates behavior below the normal 60-question run size.
 - `sample-bank-100.js`: 100 questions, Q001-Q100, rotating canonical answers A-D. Validates 60-question selection from a larger bank.
 
-Both exercise schema validation, randomized question and displayed-answer order, scoring, flags, confidence, review, mastery, resume, export/import, mismatch detection, and reset behavior.
+Both exercise schema validation, randomized question and displayed-answer order, scoring, flags, confidence, per-question notes, review, mastery, resume, dual-format completed-run export, progress export/import, mismatch detection, and reset behavior.
 
 ## Restricted private content
 
