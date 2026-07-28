@@ -1,16 +1,28 @@
 # CompTIA SecAI+ Training Project
 
-Independent working repository for CompTIA SecAI+ CY0-001 preparation and practice-engine validation.
+Independent engineering record documenting the development and validation of a personal SecAI+ CY0-001 training and assessment system.
+
+## Purpose
+
+This repository records design decisions, implementation details, validation methods, and independently authored training content. It is published as an engineering note and project history, not as an official study guide, commercial training product, or vendor-affiliated resource.
 
 ## Current state
 
-- `practice-test/` contains the static browser application.
+- `practice-test/` contains the static browser application used during validation.
 - `practice-test/questions.js` is the active 60-question Diagnostic v2 bank loaded by `practice-test/index.html`.
 - `test-banks/secai-plus-minimal-independent-bank-v1.js` is the alternate 60-question independent bank.
 - Both real banks use the compact row authoring format documented in `practice-test/README.md`.
 - `test-banks/` also contains deterministic application fixtures used for engine validation.
 
-This repository does not include vendor-supplied exam questions, exam-objective documents, or other restricted training material. CompTIA and SecAI+ are trademarks of CompTIA, Inc. This project is independent and is not affiliated with or endorsed by CompTIA.
+## Legal notice
+
+Copyright © 2026 novovictus. All rights reserved.
+
+This repository does not include vendor-supplied exam questions, exam-objective documents, logos, or other restricted training material. The included questions and supporting content are independently authored working material and are subject to continuing technical review.
+
+CompTIA and SecAI+ are trademarks of CompTIA, Inc. This project is independent and is not affiliated with, sponsored by, or endorsed by CompTIA.
+
+No license is granted to copy, modify, redistribute, publish, or commercially use the contents of this repository except as otherwise permitted by law or by written authorization from the copyright holder.
 
 ## Application
 
