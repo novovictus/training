@@ -35,6 +35,8 @@
             <small>Use 0 to disable the countdown and automatic submission.</small>
           </label>
           <label class="check"><input id="include-mastered" type="checkbox"> Include mastered questions</label>
+          <label class="check"><input id="enable-answer-reveal" type="checkbox"> Enable per-question answer reveal</label>
+          <small class="setting-note">Adds a deliberate Show correct answer control during the run. Disabled by default.</small>
           <div id="customize-summary" class="summary"></div>
           <div class="actions spread"><button value="cancel">Cancel</button><button id="save-customize" value="default" class="primary">Save</button></div>
         </form>
@@ -53,6 +55,10 @@
       <div class="exam-meta"><span id="question-count"></span><button id="flag-btn" class="small">Flag</button></div>
       <h2 id="question-stem"></h2>
       <form id="options" class="options"></form>
+      <section id="answer-reveal-controls" class="answer-reveal-controls" hidden>
+        <button id="reveal-answer-btn" type="button">Show correct answer</button>
+        <div id="answer-reveal" class="answer-reveal" aria-live="polite" hidden></div>
+      </section>
       <fieldset class="confidence">
         <legend>Confidence</legend>
         <label><input type="radio" name="confidence" value="0"> 0 Guess</label>
@@ -81,5 +87,6 @@
   </main>
   <script src="questions.js"></script>
   <script src="app.js"></script>
+  <script src="answer-reveal.js"></script>
 </body>
 </html>
