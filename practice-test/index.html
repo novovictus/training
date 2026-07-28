@@ -27,6 +27,12 @@
       <dialog id="customize-dialog">
         <form method="dialog" id="customize-form">
           <h2>Customize practice</h2>
+          <fieldset class="run-mode-setting">
+            <legend>Run mode</legend>
+            <label><input type="radio" name="run-mode" value="exam"> Exam</label>
+            <label><input type="radio" name="run-mode" value="practice"> Practice</label>
+          </fieldset>
+          <small class="setting-note">Practice mode locks each submitted answer and immediately shows whether it was correct.</small>
           <label>Number of questions
             <input id="question-limit" type="number" min="1" value="60">
           </label>
@@ -35,8 +41,6 @@
             <small>Use 0 to disable the countdown and automatic submission.</small>
           </label>
           <label class="check"><input id="include-mastered" type="checkbox"> Include mastered questions</label>
-          <label class="check"><input id="enable-answer-reveal" type="checkbox"> Enable per-question answer reveal</label>
-          <small class="setting-note">Adds a deliberate Show correct answer control during the run. Disabled by default.</small>
           <div id="customize-summary" class="summary"></div>
           <div class="actions spread"><button value="cancel">Cancel</button><button id="save-customize" value="default" class="primary">Save</button></div>
         </form>
@@ -56,7 +60,6 @@
       <h2 id="question-stem"></h2>
       <form id="options" class="options"></form>
       <section id="answer-reveal-controls" class="answer-reveal-controls" hidden>
-        <button id="reveal-answer-btn" type="button">Show correct answer</button>
         <div id="answer-reveal" class="answer-reveal" aria-live="polite" hidden></div>
       </section>
       <fieldset class="confidence">
