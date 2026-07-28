@@ -73,7 +73,6 @@ Canonical-answer imbalance must be corrected through content review rather than 
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
-│   ├── answer-reveal.js
 │   └── questions.js
 └── test-banks/
     ├── README.md

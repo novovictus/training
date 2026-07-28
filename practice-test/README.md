@@ -14,11 +14,10 @@ Keep these files together:
 index.html
 styles.css
 app.js
-answer-reveal.js
 questions.js
 ```
 
-Open `index.html` in Chrome. The page loads `questions.js`, then `app.js`, then `answer-reveal.js`.
+Open `index.html` in Chrome. The page loads `questions.js`, then `app.js`.
 
 ## Active bank
 

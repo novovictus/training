@@ -3,6 +3,7 @@ const SUPPORTED_SCHEMA_VERSION=1;
 const DEFAULT_QUESTION_COUNT=60;
 const LEGACY_PRODUCTION_BANK={bankId:'secai-plus-cy0-001-v1',bankVersion:'1.0.0'};
 const OPTION_KEYS=['A','B','C','D'];
+const RUN_MODE_STORAGE_KEY_PREFIX='secai-plus-run-mode:';
 const views=['start-view','exam-view','results-view','progress-view'];
 const $=id=>document.getElementById(id);
 
@@ -117,13 +118,14 @@ function sanitizeActiveAttempt(attempt){
     const response=isPlainObject(attempt.responses[item.questionId])?attempt.responses[item.questionId]:{};
     return[item.questionId,createResponseState(response)];
   }));
-  return{id:typeof attempt.id==='string'&&attempt.id?attempt.id:`attempt-${Number(attempt.startedAt)||Date.now()}`,startedAt:Number(attempt.startedAt)||Date.now(),durationMinutes:Math.max(0,Number(attempt.durationMinutes)||0),expiresAt:attempt.expiresAt===null?null:Number(attempt.expiresAt)||null,currentIndex:Math.max(0,Math.min(Number(attempt.currentIndex)||0,items.length-1)),items,responses};
+  return{id:typeof attempt.id==='string'&&attempt.id?attempt.id:`attempt-${Number(attempt.startedAt)||Date.now()}`,startedAt:Number(attempt.startedAt)||Date.now(),durationMinutes:Math.max(0,Number(attempt.durationMinutes)||0),expiresAt:attempt.expiresAt===null?null:Number(attempt.expiresAt)||null,currentIndex:Math.max(0,Math.min(Number(attempt.currentIndex)||0,items.length-1)),mode:sanitizeRunMode(attempt.mode),items,responses};
 }
 
 function sanitizeCompletedAttempt(attempt){
   if(!isPlainObject(attempt))return attempt;
   const sanitized={...attempt};
   if(Array.isArray(attempt.items))sanitized.items=attempt.items.map(item=>isPlainObject(item)?{...item,note:sanitizeNote(item.note)}:item);
+  if('runMode' in attempt)sanitized.runMode=sanitizeRunMode(attempt.runMode);
   return sanitized;
 }
 
@@ -197,6 +199,7 @@ function showErrorHtml(html,action){
 function openCustomize(){
   if(blocked)return;
   const settings=state.settings;$('question-limit').max=bank.length;$('question-limit').value=clampQuestionCount(settings.questionCount,bank.length);$('time-limit').value=settings.durationMinutes;$('include-mastered').checked=settings.includeMastered;
+  document.querySelectorAll('input[name="run-mode"]').forEach(input=>{input.checked=input.value===storedRunMode();});
   updateCustomizeSummary();['question-limit','time-limit','include-mastered'].forEach(id=>$(id).oninput=updateCustomizeSummary);$('customize-dialog').showModal();
 }
 
@@ -208,6 +211,7 @@ function updateCustomizeSummary(){
 function saveCustomize(event){
   if(blocked)return;
   event.preventDefault();const include=$('include-mastered').checked;const eligible=bank.filter(question=>include||!masteryFor(question.id).mastered).length;
+  localStorage.setItem(runModeStorageKey(),selectedRunMode());
   state.settings={questionCount:clampQuestionCount($('question-limit').value,eligible||bank.length),durationMinutes:Math.max(0,Number($('time-limit').value)||0),includeMastered:include};saveState();$('customize-dialog').close();renderHome();
 }
 
@@ -221,7 +225,7 @@ function startNew(){
   if(configuredCount>pool.length&&!confirm(`Only ${pool.length} questions are currently eligible because mastered questions are excluded. Start a ${pool.length}-question run?`))return;
   pool=shuffle(pool);const selected=pool.slice(0,Math.min(configuredCount,pool.length));const now=Date.now();
   const items=selected.map(question=>({questionId:question.id,optionOrder:shuffle(OPTION_KEYS)}));
-  active={id:`attempt-${now}`,startedAt:now,durationMinutes:state.settings.durationMinutes,expiresAt:state.settings.durationMinutes?now+state.settings.durationMinutes*60000:null,currentIndex:0,items,responses:Object.fromEntries(items.map(item=>[item.questionId,createResponseState()]))};
+  active={id:`attempt-${now}`,startedAt:now,durationMinutes:state.settings.durationMinutes,expiresAt:state.settings.durationMinutes?now+state.settings.durationMinutes*60000:null,currentIndex:0,mode:storedRunMode(),items,responses:Object.fromEntries(items.map(item=>[item.questionId,createResponseState()]))};
   index=0;saveState();startExam();
 }
 
@@ -240,19 +244,57 @@ function currentResponse(){return active.responses[currentItem().questionId];}
 function questionById(id){return questionLookup.get(id);}
 function masteryFor(id){return state.mastery[id]||{attempts:0,correct:0,mastered:false};}
 function displayedLetter(item,canonicalKey){const position=item.optionOrder.indexOf(canonicalKey);return position<0?null:String.fromCharCode(65+position);}
+function runModeStorageKey(){return`${RUN_MODE_STORAGE_KEY_PREFIX}${bankConfig.bankId}`;}
+function sanitizeRunMode(value){return value==='practice'?'practice':'exam';}
+function storedRunMode(){return sanitizeRunMode(localStorage.getItem(runModeStorageKey()));}
+function selectedRunMode(){return sanitizeRunMode(document.querySelector('input[name="run-mode"]:checked')?.value);}
+function activeRunMode(){return sanitizeRunMode(active?.mode);}
+function isPracticeMode(){return activeRunMode()==='practice';}
+function isLockedPracticeResponse(response=currentResponse()){return isPracticeMode()&&Boolean(response.locked);}
+
+function renderAnswerReveal(item,question,response){
+  const controls=$('answer-reveal-controls');
+  const box=$('answer-reveal');
+  document.querySelectorAll('#options .option').forEach(option=>option.classList.remove('answer-correct','answer-incorrect'));
+  if(!isLockedPracticeResponse(response)){controls.hidden=true;box.hidden=true;box.textContent='';return;}
+  const correctDisplayed=displayedLetter(item,question.answer);
+  const selectedDisplayed=displayedLetter(item,response.answer);
+  const correct=response.answer===question.answer;
+  box.innerHTML=`<strong class="${correct?'correct':'incorrect'}">${correct?'Correct':'Incorrect'}</strong><br>Correct answer: <strong>${escapeHtml(correctDisplayed)}. ${escapeHtml(question.options[question.answer])}</strong>${correct?'':`<br>Your answer: <strong>${escapeHtml(selectedDisplayed)}. ${escapeHtml(question.options[response.answer])}</strong>`}`;
+  controls.hidden=false;
+  box.hidden=false;
+  document.querySelectorAll('#options .option').forEach(option=>{
+    const input=option.querySelector('input[name="answer"]');
+    if(!input)return;
+    option.classList.toggle('answer-correct',input.value===question.answer);
+    option.classList.toggle('answer-incorrect',input.value===response.answer&&response.answer!==question.answer);
+  });
+}
 
 function renderQuestion(){
   const item=currentItem(),question=currentQuestion(),response=currentResponse();active.currentIndex=index;saveState();
   $('question-count').textContent=`Question ${index+1} of ${active.items.length} · ${question.id} · Domain ${question.domain} · Mastery ${Math.min(masteryFor(question.id).correct,3)}/3`;
   $('question-stem').textContent=question.stem;
   $('options').innerHTML=item.optionOrder.map((key,position)=>`<label class="option"><input type="radio" name="answer" value="${key}" ${response.answer===key?'checked':''}><strong>${String.fromCharCode(65+position)}.</strong><span>${escapeHtml(question.options[key])}</span></label>`).join('');
-  document.querySelectorAll('input[name="answer"]').forEach(el=>el.onchange=e=>{response.answer=e.target.value;saveState();renderNavigator();});
+  const locked=isLockedPracticeResponse(response);
+  document.querySelectorAll('input[name="answer"]').forEach(el=>{el.disabled=locked;el.onchange=e=>{response.answer=e.target.value;saveState();renderNavigator();};});
   document.querySelectorAll('input[name="confidence"]').forEach(el=>el.checked=String(response.confidence)===el.value);
   $('question-note').value=sanitizeNote(response.note);
-  $('flag-btn').classList.toggle('flagged',response.flagged);$('flag-btn').textContent=response.flagged?'Flagged':'Flag';$('prev-btn').disabled=index===0;$('next-btn').textContent=index===active.items.length-1?'Review':'Next';renderNavigator();
+  $('flag-btn').classList.toggle('flagged',response.flagged);$('flag-btn').textContent=response.flagged?'Flagged':'Flag';$('prev-btn').disabled=index===0;$('next-btn').textContent=isPracticeMode()?(locked?(index===active.items.length-1?'Finish run':'Next'):'Submit answer'):(index===active.items.length-1?'Review':'Next');renderAnswerReveal(item,question,response);renderNavigator();
 }
 
-function move(delta){if(blocked)return;index=Math.max(0,Math.min(active.items.length-1,index+delta));renderQuestion();window.scrollTo({top:0,behavior:'smooth'});}
+function move(delta){
+  if(blocked)return;
+  if(delta>0&&isPracticeMode()){
+    const response=currentResponse();
+    if(!response.locked){
+      if(!response.answer){alert('Select an answer before submitting it.');return;}
+      response.locked=true;saveState();renderQuestion();return;
+    }
+    if(index===active.items.length-1){submit(false);return;}
+  }
+  index=Math.max(0,Math.min(active.items.length-1,index+delta));renderQuestion();window.scrollTo({top:0,behavior:'smooth'});
+}
 function toggleFlag(){if(blocked)return;const response=currentResponse();response.flagged=!response.flagged;saveState();renderQuestion();}
 
 function renderNavigator(){
@@ -264,6 +306,7 @@ function submit(expired){
   if(blocked||!active)return;
   const unanswered=active.items.filter(item=>!active.responses[item.questionId].answer).length;
   if(!expired&&!confirm(unanswered?`Submit with ${unanswered} unanswered question${unanswered===1?'':'s'}?`:'Submit this practice run?'))return;
+  const runMode=activeRunMode();
   clearInterval(ticker);const finishedAt=Date.now();
   const configuredQuestionCount=state.settings.questionCount;
   const items=active.items.map((runtime,number)=>{
@@ -273,14 +316,14 @@ function submit(expired){
     const current=masteryFor(question.id);
     return{...response,id:question.id,number:number+1,questionNumber:question.number,domain:question.domain,target:question.target,stem:question.stem,options:{A:question.options.A,B:question.options.B,C:question.options.C,D:question.options.D},correct,correctAnswer:question.answer,optionOrder:[...runtime.optionOrder],displayedAnswer:response.answer?displayedLetter(runtime,response.answer):null,displayedCorrectAnswer:displayedLetter(runtime,question.answer),newlyMastered:!wasMastered&&current.mastered,note:sanitizeNote(response.note)};
   });
-  const correct=items.filter(item=>item.correct).length;const result={id:active.id,startedAt:active.startedAt,finishedAt,durationSeconds:Math.round((finishedAt-active.startedAt)/1000),configuredQuestionCount,configuredMinutes:active.durationMinutes,expired,correct,total:items.length,percent:Math.round(correct/items.length*100),items};
+  const correct=items.filter(item=>item.correct).length;const result={id:active.id,startedAt:active.startedAt,finishedAt,durationSeconds:Math.round((finishedAt-active.startedAt)/1000),configuredQuestionCount,configuredMinutes:active.durationMinutes,expired,correct,total:items.length,percent:Math.round(correct/items.length*100),runMode,items};
   state.attempts.push(result);active=null;saveState();renderResults(result);
 }
 
 function renderResults(result){
   currentResult=result;
   showView('results-view');const unanswered=result.items.filter(item=>!item.answer).length;const newlyMastered=result.items.filter(item=>item.newlyMastered).length;
-  $('score-card').innerHTML=`<div class="score-number">${result.percent}%</div><p>${result.correct} of ${result.total} correct · ${formatDuration(result.durationSeconds)} · ${unanswered} unanswered · ${newlyMastered} newly mastered</p>`;
+  $('score-card').innerHTML=`<div class="score-number">${result.percent}%</div><p>${result.correct} of ${result.total} correct · ${formatDuration(result.durationSeconds)} · ${unanswered} unanswered · ${newlyMastered} newly mastered</p><p><strong>Run mode:</strong> ${sanitizeRunMode(result.runMode)==='practice'?'Practice':'Exam'}</p>`;
   const mastered=bank.filter(question=>masteryFor(question.id).mastered).length;$('readiness-card').innerHTML=`<strong>${mastered} of ${bank.length} mastered</strong><br>A question is mastered after three correct completions.`;
   const review=result.items.filter(item=>item.answer||item.flagged||item.confidence!==null).sort((a,b)=>a.number-b.number);
   $('review-list').innerHTML=review.length?`<h2>Review queue</h2>${review.map(item=>{const status=!item.answer?'Not answered':item.correct?'Correct':'Incorrect';const statusClass=item.correct?'correct':item.answer?'incorrect':'';const flagBadge=item.flagged?' <span class="review-flag">Flagged</span>':'';return`<article class="review-item"><h3>Question ${item.number} · ${item.id}${flagBadge}: <span class="${statusClass}">${status}</span></h3><p>${escapeHtml(item.stem)}</p><p>Your answer: <strong>${item.displayedAnswer||'Not answered'}</strong> · Correct answer: <strong>${item.displayedCorrectAnswer}</strong> · Confidence: <strong>${item.confidence??'Not set'}</strong></p><p><strong>Target:</strong> ${escapeHtml(item.target)}</p></article>`;}).join('')}`:'<p>No answered, flagged, or confidence-marked questions to review.</p>';
@@ -332,7 +375,7 @@ function clampQuestionCount(requested,maxAllowed){
 }
 
 function createResponseState(response={}){
-  return{answer:isOptionKey(response.answer)?response.answer:null,confidence:isConfidenceValue(response.confidence)?Number(response.confidence):null,flagged:Boolean(response.flagged),note:sanitizeNote(response.note)};
+  return{answer:isOptionKey(response.answer)?response.answer:null,confidence:isConfidenceValue(response.confidence)?Number(response.confidence):null,flagged:Boolean(response.flagged),locked:Boolean(response.locked),note:sanitizeNote(response.note)};
 }
 
 function sanitizeNote(value){return typeof value==='string'?value:'';}
@@ -372,6 +415,7 @@ function buildRunExportRecord(result,exportedAt){
       startedAt:toIsoString(result.startedAt),
       finishedAt:toIsoString(result.finishedAt),
       exportedAt:exportedAt.toISOString(),
+      mode:sanitizeRunMode(result.runMode),
       durationSeconds:result.durationSeconds,
       configuredQuestionCount:result.configuredQuestionCount??result.total,
       configuredTimeLimitMinutes:result.configuredMinutes,
@@ -420,6 +464,7 @@ function buildRunTextReport(record){
     `Start time: ${record.run.startedAt}`,
     `Finish time: ${record.run.finishedAt}`,
     `Export time: ${record.run.exportedAt}`,
+    `Run mode: ${record.run.mode==='practice'?'Practice':'Exam'}`,
     `Duration seconds: ${record.run.durationSeconds}`,
     `Configured question count: ${record.run.configuredQuestionCount}`,
     `Configured time limit: ${record.run.configuredTimeLimitMinutes}`,
