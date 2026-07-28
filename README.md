@@ -16,7 +16,9 @@ The supplied CompTIA practice questions are isolated under `test-banks/private/`
 
 Open `practice-test/index.html` in Google Chrome. Chrome is the only validated browser. Direct `file://` operation and local-storage persistence in other browsers are unverified.
 
-The application supports randomized question and displayed-answer order, configurable runs, timers, flags, confidence ratings, per-question notes, resume, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
+The application supports randomized question and displayed-answer order, configurable runs, exam and immediate-feedback practice modes, timers, flags, confidence ratings, per-question notes, resume, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
+
+Exam mode withholds correctness until final submission. Practice mode requires each answer to be submitted, locks it, and immediately shows whether it was correct before navigation continues. Completed-run exports identify the selected mode.
 
 See `practice-test/README.md` for operation, compact row authoring, runtime schema, and state-safety details.
 
@@ -61,6 +63,7 @@ Canonical-answer imbalance must be corrected through content review rather than 
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
+│   ├── answer-reveal.js
 │   └── questions.js
 └── test-banks/
     ├── README.md
