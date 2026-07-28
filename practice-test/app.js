@@ -258,16 +258,16 @@ function renderAnswerReveal(item,question,response){
   document.querySelectorAll('#options .option').forEach(option=>option.classList.remove('answer-correct','answer-incorrect'));
   if(!isLockedPracticeResponse(response)){controls.hidden=true;box.hidden=true;box.textContent='';return;}
   const correctDisplayed=displayedLetter(item,question.answer);
-  const selectedDisplayed=displayedLetter(item,response.answer);
+  const selectedDisplayed=response.answer?`${displayedLetter(item,response.answer)}. ${question.options[response.answer]}`:'Not answered';
   const correct=response.answer===question.answer;
-  box.innerHTML=`<strong class="${correct?'correct':'incorrect'}">${correct?'Correct':'Incorrect'}</strong><br>Correct answer: <strong>${escapeHtml(correctDisplayed)}. ${escapeHtml(question.options[question.answer])}</strong>${correct?'':`<br>Your answer: <strong>${escapeHtml(selectedDisplayed)}. ${escapeHtml(question.options[response.answer])}</strong>`}`;
+  box.innerHTML=`<strong class="${correct?'correct':'incorrect'}">${correct?'Correct':'Incorrect'}</strong><br>Correct answer: <strong>${escapeHtml(correctDisplayed)}. ${escapeHtml(question.options[question.answer])}</strong>${correct?'':`<br>Your answer: <strong>${escapeHtml(selectedDisplayed)}</strong>`}`;
   controls.hidden=false;
   box.hidden=false;
   document.querySelectorAll('#options .option').forEach(option=>{
     const input=option.querySelector('input[name="answer"]');
     if(!input)return;
     option.classList.toggle('answer-correct',input.value===question.answer);
-    option.classList.toggle('answer-incorrect',input.value===response.answer&&response.answer!==question.answer);
+    option.classList.toggle('answer-incorrect',response.answer!==null&&input.value===response.answer&&response.answer!==question.answer);
   });
 }
 
@@ -288,7 +288,6 @@ function move(delta){
   if(delta>0&&isPracticeMode()){
     const response=currentResponse();
     if(!response.locked){
-      if(!response.answer){alert('Select an answer before submitting it.');return;}
       response.locked=true;saveState();renderQuestion();return;
     }
     if(index===active.items.length-1){submit(false);return;}

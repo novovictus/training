@@ -110,10 +110,10 @@ The Customize dialog provides two run modes.
 
 ### Practice mode
 
-- Select an answer, then use `Submit answer`.
-- Submission is blocked until an answer is selected.
+- Select an answer, or leave the question unanswered, then use `Submit answer`.
 - The submitted answer becomes locked and cannot be changed.
 - Correct or incorrect feedback appears immediately.
+- A blank submitted response is shown as incorrect with `Your answer: Not answered`.
 - The correct option is highlighted; an incorrect selected option is highlighted separately.
 - After feedback, the control changes to `Next`, or `Finish run` on the last question.
 - Navigating back to a submitted question restores the locked answer and feedback.
