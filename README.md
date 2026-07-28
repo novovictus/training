@@ -1,6 +1,6 @@
 # CompTIA SecAI+ Training Project
 
-Private working repository for CompTIA SecAI+ CY0-001 preparation and practice-engine validation.
+Independent working repository for CompTIA SecAI+ CY0-001 preparation and practice-engine validation.
 
 ## Current state
 
@@ -8,9 +8,9 @@ Private working repository for CompTIA SecAI+ CY0-001 preparation and practice-e
 - `practice-test/questions.js` is the active 60-question Diagnostic v2 bank loaded by `practice-test/index.html`.
 - `test-banks/secai-plus-minimal-independent-bank-v1.js` is the alternate 60-question independent bank.
 - Both real banks use the compact row authoring format documented in `practice-test/README.md`.
-- `test-banks/` also contains deterministic application fixtures and a restricted private sample bank.
+- `test-banks/` also contains deterministic application fixtures used for engine validation.
 
-The supplied CompTIA practice questions are isolated under `test-banks/private/` and must not be included in external packages.
+This repository does not include vendor-supplied exam questions, exam-objective documents, or other restricted training material. CompTIA and SecAI+ are trademarks of CompTIA, Inc. This project is independent and is not affiliated with or endorsed by CompTIA.
 
 ## Application
 
@@ -55,8 +55,6 @@ Canonical-answer imbalance must be corrected through content review rather than 
 
 ```text
 .
-├── CompTIA SecAI+ CY0-001 Exam Objectives (4.0).pdf
-├── SecAI+ Practice Test V1.docx
 ├── README.md
 ├── practice-test/
 │   ├── README.md
@@ -69,7 +67,5 @@ Canonical-answer imbalance must be corrected through content review rather than 
     ├── README.md
     ├── secai-plus-minimal-independent-bank-v1.js
     ├── test-bank-42.js
-    ├── sample-bank-100.js
-    └── private/
-        └── comptia-sample-20.js
+    └── sample-bank-100.js
 ```
