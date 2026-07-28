@@ -30,7 +30,9 @@ These files are safe application fixtures, not certification practice content:
 - `test-bank-42.js`: 42 questions, Q001-Q042, rotating canonical answers A-D. Validates behavior below the normal 60-question run size.
 - `sample-bank-100.js`: 100 questions, Q001-Q100, rotating canonical answers A-D. Validates 60-question selection from a larger bank.
 
-Both exercise schema validation, randomized question and displayed-answer order, scoring, flags, confidence, per-question notes, review, mastery, resume, dual-format completed-run export, progress export/import, mismatch detection, and reset behavior.
+Both exercise schema validation, randomized question and displayed-answer order, exam mode, immediate-feedback practice mode, answer locking, scoring, flags, confidence, per-question notes, review, mastery, resume, dual-format completed-run export, progress export/import, mismatch detection, and reset behavior.
+
+For practice-mode validation, confirm that submitting an answer locks it, shows immediate correctness feedback, persists through navigation and reload, and records `practice` in the completed run export. Existing saved attempts without mode metadata should continue as exam-mode attempts.
 
 ## Restricted private content
 
