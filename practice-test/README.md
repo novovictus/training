@@ -14,10 +14,11 @@ Keep these files together:
 index.html
 styles.css
 app.js
+answer-reveal.js
 questions.js
 ```
 
-Open `index.html` in Chrome. The page loads `questions.js`, then `app.js`.
+Open `index.html` in Chrome. The page loads `questions.js`, then `app.js`, then `answer-reveal.js`.
 
 ## Active bank
 
@@ -95,7 +96,32 @@ Validate stems, distractors, answer keys, targets, and mappings during use and r
 
 Progress is associated with `bankId` and `bankVersion`. Loading a different bank triggers a blocking mismatch warning. Export existing progress if needed, then reset local progress for the newly loaded bank.
 
-The application stores settings, mastery, attempts, and active-run state in browser local storage.
+The application stores settings, mastery, attempts, active-run state, run mode, and practice-mode answer-lock state in browser local storage.
+
+## Run modes
+
+The Customize dialog provides two run modes.
+
+### Exam mode
+
+- Questions can be answered and revisited freely.
+- Answers remain editable until the full run is submitted.
+- Correctness is withheld until the results view.
+- The existing timer, review, scoring, mastery, resume, and export behavior remains unchanged.
+
+### Practice mode
+
+- Select an answer, then use `Submit answer`.
+- Submission is blocked until an answer is selected.
+- The submitted answer becomes locked and cannot be changed.
+- Correct or incorrect feedback appears immediately.
+- The correct option is highlighted; an incorrect selected option is highlighted separately.
+- After feedback, the control changes to `Next`, or `Finish run` on the last question.
+- Navigating back to a submitted question restores the locked answer and feedback.
+- Locked state survives reload and resume.
+- Scoring and mastery use the answer submitted before feedback was shown.
+
+The selected run mode is stored per bank and is copied into each new active attempt. Existing attempts without mode metadata are treated as exam-mode attempts.
 
 ## Practice behavior
 
@@ -128,10 +154,11 @@ secai-plus-cy0-001-v2_run_2026-07-15_214327.json
 secai-plus-cy0-001-v2_run_2026-07-15_214327.txt
 ```
 
-- The JSON file remains the authoritative machine-readable run record. Its schema is unchanged.
+- The JSON file remains the authoritative machine-readable run record.
 - The text report contains a complete human-readable representation of the same run.
 - Both formats include the active bank identity and base-bank question count.
 - Both formats include run metadata, run summary totals, per-domain statistics, and one record for every presented question.
+- The JSON run record includes `run.mode` with `exam` or `practice`.
 - Per-question export data includes the question identifiers and content shown to the engine, canonical answers, displayed option order, selected answer, correctness, confidence, flag state, and the free-form note.
 - Every presented question is included, including unanswered and unnoted questions.
 - Displayed option order is preserved exactly from the completed run so the export can reconstruct what the user saw.
@@ -141,7 +168,7 @@ secai-plus-cy0-001-v2_run_2026-07-15_214327.txt
 
 `Export run` writes one completed run as a self-contained record.
 
-`Export progress` still writes the full application state, including settings, mastery, history, active-run state, and any active or completed notes. `Import progress` continues to accept older exports that do not contain note fields.
+`Export progress` still writes the full application state, including settings, mastery, history, active-run state, and any active or completed notes. `Import progress` continues to accept older exports that do not contain note fields or run-mode metadata.
 
 Canonical-answer imbalance must be corrected through content review, not cosmetic letter rotation. Displayed choices are randomized during each run.
 
