@@ -3,6 +3,7 @@
   const originalCustomize=$('customize-btn').onclick;
   const originalSaveCustomize=$('save-customize').onclick;
   const originalRenderResults=renderResults;
+  const originalRenderAnswerReveal=renderAnswerReveal;
 
   function modeLabel(mode){return sanitizeRunMode(mode)==='practice'?'Practice':'Exam';}
 
@@ -98,6 +99,15 @@
     saveState();
     registry.useBundled();
   }
+
+  renderAnswerReveal=function(item,question,response){
+    originalRenderAnswerReveal(item,question,response);
+    const box=$('answer-reveal');
+    if(!box)return;
+    box.classList.remove('feedback-correct','feedback-incorrect');
+    if(!isLockedPracticeResponse(response))return;
+    box.classList.add(response.answer===question.answer?'feedback-correct':'feedback-incorrect');
+  };
 
   $('customize-btn').onclick=()=>{
     originalCustomize();
