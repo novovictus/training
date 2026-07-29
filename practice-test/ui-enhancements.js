@@ -6,11 +6,13 @@
 
   function modeLabel(mode){return sanitizeRunMode(mode)==='practice'?'Practice':'Exam';}
 
-  function populateBankControls(){
-    const select=$('bank-select');
-    if(!select||!registry)return;
-    select.innerHTML=registry.banks.map(bank=>`<option value="${escapeHtml(bank.id)}">${escapeHtml(bank.title)} - ${bank.questionCount} questions</option>`).join('');
-    select.value=registry.selected.id;
+  function updateBankNote(){
+    const note=$('bank-file-note');
+    if(!note||!registry)return;
+    const selected=registry.selected;
+    note.textContent=`Current bank: ${selected.title} (${selected.id} v${selected.version}, ${selected.questionCount} questions).`;
+    const bundled=$('use-bundled-bank');
+    if(bundled)bundled.disabled=selected.kind==='bundled';
   }
 
   function updateActiveModeNote(){
@@ -65,25 +67,45 @@
     }).join('')}`:`<p>${wrongOnly?'No answered questions were incorrect.':'No answered, flagged, or confidence-marked questions to review.'}</p>`;
   }
 
+  function parseBankFile(text,name){
+    if(name.toLowerCase().endsWith('.json'))return JSON.parse(text);
+    const isolatedWindow={};
+    const bank=new Function('window',`${text}\nreturn window.SECAI_QUESTION_BANK;`)(isolatedWindow);
+    if(!bank)throw new Error('The JavaScript file did not assign window.SECAI_QUESTION_BANK.');
+    return bank;
+  }
+
+  async function loadBankFile(event){
+    const input=event.target;
+    const file=input.files?.[0];
+    if(!file)return;
+    try{
+      const bank=parseBankFile(await file.text(),file.name);
+      if(!registry?.validBankShape(bank))throw new Error('The selected file does not contain a supported question bank.');
+      if(active&&!confirm(`A ${modeLabel(activeRunMode())} run is in progress. Open ${bank.title} and leave this run available when you return to the current bank?`))return;
+      saveState();
+      registry.switchToCustom(bank);
+    }catch(error){
+      alert(`Question bank could not be opened.\n\n${error.message}`);
+    }finally{
+      input.value='';
+    }
+  }
+
+  function useBundledBank(){
+    if(!registry||registry.selected.kind==='bundled')return;
+    if(active&&!confirm(`A ${modeLabel(activeRunMode())} run is in progress. Return to the bundled bank and leave this run available when you reopen the current bank file?`))return;
+    saveState();
+    registry.useBundled();
+  }
+
   $('customize-btn').onclick=()=>{
     originalCustomize();
-    populateBankControls();
+    updateBankNote();
     updateActiveModeNote();
   };
 
   $('save-customize').onclick=event=>{
-    const requestedBank=$('bank-select')?.value;
-    if(registry&&requestedBank&&requestedBank!==registry.selected.id){
-      event.preventDefault();
-      if(active&&!confirm(`A ${modeLabel(activeRunMode())} run is in progress. Switch banks and leave it available to resume when you return?`)){
-        $('bank-select').value=registry.selected.id;
-        return;
-      }
-      saveState();
-      registry.selectBank(requestedBank);
-      return;
-    }
-
     const requestedMode=selectedRunMode();
     const modeChanged=Boolean(active)&&requestedMode!==activeRunMode();
     let restart=false;
@@ -102,11 +124,13 @@
     renderReviewQueue(result);
   };
 
+  $('bank-file-input')?.addEventListener('change',loadBankFile);
+  $('use-bundled-bank')?.addEventListener('click',useBundledBank);
   $('review-wrong-only')?.addEventListener('change',()=>{if(currentResult)renderReviewQueue(currentResult);});
   $('review-full-answers')?.addEventListener('change',()=>{if(currentResult)renderReviewQueue(currentResult);});
   $('home-btn')?.addEventListener('click',updateResumeLabel);
   $('progress-home-btn')?.addEventListener('click',updateResumeLabel);
 
-  populateBankControls();
+  updateBankNote();
   updateResumeLabel();
 })();
