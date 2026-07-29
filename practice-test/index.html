@@ -27,12 +27,16 @@
       <dialog id="customize-dialog">
         <form method="dialog" id="customize-form">
           <h2>Customize practice</h2>
+          <label>Question bank
+            <select id="bank-select"></select>
+          </label>
           <fieldset class="run-mode-setting">
-            <legend>Run mode</legend>
+            <legend>Run mode for new runs</legend>
             <label><input type="radio" name="run-mode" value="exam"> Exam</label>
             <label><input type="radio" name="run-mode" value="practice"> Practice</label>
           </fieldset>
           <small class="setting-note">Practice mode locks each submitted answer and immediately shows whether it was correct.</small>
+          <small id="active-mode-note" class="setting-note" hidden></small>
           <label>Number of questions
             <input id="question-limit" type="number" min="1" value="60">
           </label>
@@ -42,17 +46,17 @@
           </label>
           <label class="check"><input id="include-mastered" type="checkbox"> Include mastered questions</label>
           <div id="customize-summary" class="summary"></div>
+          <fieldset>
+            <legend>Stored data for this bank</legend>
+            <div class="actions compact">
+              <button id="export-btn" type="button">Export progress</button>
+              <label class="button-label">Import progress<input id="import-input" type="file" accept="application/json" hidden></label>
+              <button id="reset-btn" type="button" class="danger">Reset local data</button>
+            </div>
+          </fieldset>
           <div class="actions spread"><button value="cancel">Cancel</button><button id="save-customize" value="default" class="primary">Save</button></div>
         </form>
       </dialog>
-      <details>
-        <summary>Data controls</summary>
-        <div class="actions compact">
-          <button id="export-btn">Export progress</button>
-          <label class="button-label">Import progress<input id="import-input" type="file" accept="application/json" hidden></label>
-          <button id="reset-btn" class="danger">Reset local data</button>
-        </div>
-      </details>
     </section>
 
     <section id="exam-view" class="panel" hidden>
@@ -78,7 +82,15 @@
     </section>
 
     <section id="results-view" class="panel" hidden>
-      <h2>Results</h2><div id="score-card" class="score-card"></div><div id="readiness-card" class="readiness"></div><div id="review-list" class="review-list"></div>
+      <h2>Results</h2>
+      <div id="score-card" class="score-card"></div>
+      <div id="readiness-card" class="readiness"></div>
+      <fieldset id="review-controls">
+        <legend>Review display</legend>
+        <label class="check"><input id="review-wrong-only" type="checkbox"> Show only answered incorrectly</label>
+        <label class="check"><input id="review-full-answers" type="checkbox"> Show full correct answers and wrong selections</label>
+      </fieldset>
+      <div id="review-list" class="review-list"></div>
       <div class="actions"><button id="home-btn" class="primary">Return home</button><button id="progress-btn">View progress</button><button id="export-run-btn">Export run</button></div>
     </section>
 
@@ -88,7 +100,8 @@
 
     <div id="error" class="error" hidden></div>
   </main>
-  <script src="questions.js"></script>
+  <script src="bank-loader.js"></script>
   <script src="app.js"></script>
+  <script src="ui-enhancements.js"></script>
 </body>
 </html>
