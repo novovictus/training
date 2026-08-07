@@ -83,7 +83,7 @@
       </label>
       <div class="actions spread"><button id="prev-btn" type="button">Previous</button><button id="navigator-btn" type="button">Question list</button><button id="next-btn" type="button" class="primary">Next</button></div>
       <div id="navigator" class="navigator" hidden></div>
-      <button id="submit-btn" class="submit" type="button">Submit practice</button>
+      <div class="actions spread"><button id="quit-run-btn" type="button" class="danger">Quit run</button><button id="submit-btn" class="submit" type="button">Submit practice</button></div>
     </section>
 
     <section id="results-view" class="panel" hidden>
@@ -158,6 +158,15 @@
       active={id:`attempt-${now}`,startedAt:now,durationMinutes:state.settings.durationMinutes,expiresAt:state.settings.durationMinutes?now+state.settings.durationMinutes*60000:null,currentIndex:0,mode:sanitizeRunMode(mode),items:active.items.map(item=>({questionId:item.questionId,optionOrder:[...item.optionOrder]})),responses:Object.fromEntries(active.items.map(item=>[item.questionId,createResponseState()]))};
       index=0;saveState();startExam();
     }
+    function quitRun(){
+      if(!active)return;
+      if(!confirm('Quit this run? Your answers, flags, confidence ratings, notes, and elapsed progress for this run will be discarded.'))return;
+      clearInterval(ticker);
+      active=null;
+      index=0;
+      saveState();
+      renderHome();
+    }
     function reviewAnswerLine(item,fullAnswers){
       const selectedLetter=item.displayedAnswer||'Not answered';
       const correctLetter=item.displayedCorrectAnswer;
@@ -205,6 +214,7 @@
     renderResults=function(result){originalRenderResults(result);if($('review-wrong-only'))$('review-wrong-only').checked=false;if($('review-full-answers'))$('review-full-answers').checked=false;renderReviewQueue(result);};
     $('bank-file-input')?.addEventListener('change',loadBankFile);
     $('use-bundled-bank')?.addEventListener('click',useBundledBank);
+    $('quit-run-btn')?.addEventListener('click',quitRun);
     $('review-wrong-only')?.addEventListener('change',()=>{if(currentResult)renderReviewQueue(currentResult);});
     $('review-full-answers')?.addEventListener('change',()=>{if(currentResult)renderReviewQueue(currentResult);});
     $('home-btn')?.addEventListener('click',updateResumeLabel);
