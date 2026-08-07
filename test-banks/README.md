@@ -10,23 +10,11 @@
 
 All real banks use the compact row authoring format documented in `../practice-test/README.md`. The row mapper produces the runtime object schema consumed by `app.js`.
 
-Bank selection/loading is currently wired in `../practice-test/index.html`; `app.js` validates and consumes `window.SECAI_QUESTION_BANK`. Automatic discovery of newly introduced outside banks is not implemented in this baseline.
+Bank loading is currently wired in `../practice-test/index.html`; `app.js` validates and consumes `window.SECAI_QUESTION_BANK`. The shipped bundled source is `../practice-test/questions.js`.
 
-For direct testing of an outside or unregistered bank, back up the shipped default and copy the desired bank over `practice-test/questions.js`:
+A valid outside or named `.js` or `.json` bank can be opened at runtime through Customize > Open bank file. The application stores the selected custom bank in browser local storage until `Use bundled bank` is selected. Bank files under this directory are not discovered automatically.
 
-```powershell
-Copy-Item .\practice-test\questions.js .\practice-test\questions.active.js -Force
-Copy-Item .\test-banks\secai-plus-minimal-independent-bank-v1.js .\practice-test\questions.js -Force
-```
-
-Restore the shipped default afterward:
-
-```powershell
-Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
-Remove-Item .\practice-test\questions.active.js
-```
-
-A bank mismatch warning is expected when identities differ.
+A bank mismatch warning is expected when stored progress belongs to a different bank identity or version.
 
 ## Public deterministic fixtures
 
@@ -35,9 +23,11 @@ These files are safe application fixtures, not certification practice content:
 - `test-bank-42.js`: 42 questions, Q001-Q042, rotating canonical answers A-D. Validates behavior below the normal 60-question run size.
 - `sample-bank-100.js`: 100 questions, Q001-Q100, rotating canonical answers A-D. Validates 60-question selection from a larger bank.
 
-Both exercise schema validation, randomized question and displayed-answer order, exam mode, immediate-feedback practice mode, answer locking, scoring, flags, confidence, per-question notes, review, mastery, resume, dual-format completed-run export, progress export/import, mismatch detection, and reset behavior.
+Both exercise schema validation, randomized question and displayed-answer order, exam mode, immediate-feedback practice mode, answer locking, scoring, flags, confidence, per-question notes, resume, quit-run abandonment, review, mastery, dual-format completed-run export, progress export/import, mismatch detection, and reset behavior.
 
 For practice-mode validation, confirm that submitting an answer locks it, shows immediate correctness feedback, persists through navigation and reload, and records `practice` in the completed run export. Existing saved attempts without mode metadata should continue as exam-mode attempts.
+
+For quit-run validation, confirm that abandoning an active run requires confirmation, removes the active attempt and resume state, and preserves completed history, mastery, settings, selected bank, and selected run mode.
 
 ## Restricted private content
 
@@ -45,16 +35,18 @@ For practice-mode validation, confirm that submitting an answer locks it, shows 
 
 Do not include `test-banks/private/` in any external package, release, shared archive, or published repository export.
 
-## Fixture swap workflow
+## Fixture validation workflow
 
-From the repository root:
+From the running application, open Customize > Open bank file and select the desired fixture or bank. Use `Use bundled bank` to return to `practice-test/questions.js`.
+
+For direct compatibility testing of the bundled `questions.js` path itself, a fixture may still be copied over the bundled file temporarily:
 
 ```powershell
 Copy-Item .\practice-test\questions.js .\practice-test\questions.active.js -Force
 Copy-Item .\test-banks\test-bank-42.js .\practice-test\questions.js -Force
 ```
 
-Install the 100-question fixture:
+Install the 100-question fixture on the bundled path:
 
 ```powershell
 Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
@@ -67,4 +59,4 @@ Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Forc
 Remove-Item .\practice-test\questions.active.js
 ```
 
-Reload `practice-test/index.html` after each swap. Before committing, restore `questions.js`, remove temporary files, and inspect `git status`.
+Reload `practice-test/index.html` after a direct file swap. Before committing, restore `questions.js`, remove temporary files, and inspect `git status`.
