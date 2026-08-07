@@ -17,11 +17,11 @@ app.js
 questions.js
 ```
 
-Open `index.html` in Chrome. Bank selection/loading is currently wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload.
+Open `index.html` in Chrome. Bank loading is currently wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload.
 
 `questions.js` is the shipped default bank payload. It currently mirrors the canonical named comprehensive bank at `../test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
 
-Automatic discovery of newly introduced outside banks is not implemented in this baseline. Named banks that are intended to appear in the application must be wired into the current `index.html` bank-loading configuration. A valid outside bank can still be substituted manually as `questions.js` for direct testing.
+A valid outside `.js` or `.json` bank can be opened through Customize > Open bank file. The selected custom bank is retained in browser local storage until `Use bundled bank` is selected. Automatic discovery of bank files under `../test-banks/` is not implemented in this baseline.
 
 ## Default bank
 
@@ -101,7 +101,9 @@ Validate stems, distractors, answer keys, targets, and mappings during use and r
 
 Progress is associated with `bankId` and `bankVersion`. Loading a different bank triggers a blocking mismatch warning. Export existing progress if needed, then reset local progress for the newly loaded bank.
 
-The application stores settings, mastery, attempts, active-run state, run mode, and practice-mode answer-lock state in browser local storage.
+The application stores settings, mastery, attempts, active-run state, run mode, selected custom-bank data, and practice-mode answer-lock state in browser local storage.
+
+`Quit run` abandons only the current active attempt after confirmation. It clears that attempt's answers, flags, confidence ratings, notes, timer state, and resume state. It does not remove completed attempts, mastery, settings, selected bank, or selected run mode.
 
 ## Run modes
 
@@ -112,7 +114,7 @@ The Customize dialog provides two run modes.
 - Questions can be answered and revisited freely.
 - Answers remain editable until the full run is submitted.
 - Correctness is withheld until the results view.
-- The existing timer, review, scoring, mastery, resume, and export behavior remains unchanged.
+- Timer, review, scoring, mastery, resume, quit, and export behavior remain available.
 
 ### Practice mode
 
@@ -125,12 +127,13 @@ The Customize dialog provides two run modes.
 - Navigating back to a submitted question restores the locked answer and feedback.
 - Locked state survives reload and resume.
 - Scoring and mastery use the answer submitted before feedback was shown.
+- `Quit run` discards the active practice attempt without recording it as completed.
 
 The selected run mode is stored per bank and is copied into each new active attempt. Existing attempts without mode metadata are treated as exam-mode attempts.
 
 ## Practice behavior
 
-The application supports randomized question and displayed-answer order, configurable run size and timer, confidence ratings, flags, per-question free-form notes, resume, review, mastery, history, export, and import.
+The application supports randomized question and displayed-answer order, configurable run size and timer, confidence ratings, flags, per-question free-form notes, resume, explicit active-run abandonment, review, mastery, history, export, and import.
 
 ## Per-question notes
 
@@ -140,6 +143,7 @@ Each active question includes one optional multiline `Notes` field.
 - Notes autosave into the active run through the same local-storage state used for answers, flags, and confidence.
 - Notes are restored when moving between questions.
 - Notes are restored after reloading the page and resuming an interrupted run.
+- Quitting the active run discards its notes along with the rest of that active attempt.
 - Notes do not affect scoring, mastery, answer randomization, question randomization, confidence, or flag behavior.
 
 Older saved state without note fields remains compatible. Missing or invalid note values are treated as empty strings when a run is restored.
@@ -149,6 +153,7 @@ Older saved state without note fields remains compatible. Missing or invalid not
 Completed runs can be exported manually from the results view with `Export run`.
 
 - Export is manual. Submitting a run does not automatically download files.
+- Quitting a run does not create a completed run or an exportable run record.
 - Each `Export run` click creates two files from the same completed run:
   - the existing machine-readable JSON run record
   - a complete human-readable plain-text report
@@ -167,7 +172,7 @@ Completed runs can be exported manually from the results view with `Export run`.
 
 `Export run` writes one completed run as a self-contained record.
 
-`Export progress` still writes the full application state, including settings, mastery, history, active-run state, and any active or completed notes. `Import progress` continues to accept older exports that do not contain note fields or run-mode metadata.
+`Export progress` writes the full application state, including settings, mastery, history, active-run state, and any active or completed notes. `Import progress` continues to accept older exports that do not contain note fields or run-mode metadata.
 
 Canonical-answer imbalance must be corrected through content review, not cosmetic letter rotation. Displayed choices are randomized during each run.
 
