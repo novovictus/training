@@ -17,21 +17,27 @@ app.js
 questions.js
 ```
 
-Open `index.html` in Chrome. The page loads `questions.js`, then `app.js`.
+Open `index.html` in Chrome. Bank selection/loading is currently wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload.
 
-## Active bank
+`questions.js` is the shipped default bank payload. It currently mirrors the canonical named comprehensive bank at `../test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
 
-`questions.js` is the active 60-question Diagnostic v2 bank.
+Automatic discovery of newly introduced outside banks is not implemented in this baseline. Named banks that are intended to appear in the application must be wired into the current `index.html` bank-loading configuration. A valid outside bank can still be substituted manually as `questions.js` for direct testing.
+
+## Default bank
 
 ```text
-bankId: secai-plus-cy0-001-v2
-bankVersion: 2.0.0
-questions: 60
+bankId: secai-plus-cy0-001-comprehensive-v1
+bankVersion: 1.0.0
+questions: 168
 ```
 
-Domain allocation is 10/24/14/12 for Domains 1 through 4.
+The named source of record is `../test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
 
-The alternate independent bank is stored at `../test-banks/secai-plus-minimal-independent-bank-v1.js`.
+Additional real banks are stored under `../test-banks/`:
+
+- `secai-plus-cy0-001-terminology-drill-bank-v1.js`: terminology-focused drill bank, 195 questions.
+- `secai-plus-cy0-001-diagnostic-v2.js`: archived prior Diagnostic v2 bank, 60 questions.
+- `secai-plus-minimal-independent-bank-v1.js`: independent validation bank, 60 questions.
 
 ## Canonical authoring format
 
@@ -146,13 +152,7 @@ Completed runs can be exported manually from the results view with `Export run`.
 - Each `Export run` click creates two files from the same completed run:
   - the existing machine-readable JSON run record
   - a complete human-readable plain-text report
-- Both files share one local timestamp generated once per click, for example:
-
-```text
-secai-plus-cy0-001-v2_run_2026-07-15_214327.json
-secai-plus-cy0-001-v2_run_2026-07-15_214327.txt
-```
-
+- Both files share one local timestamp generated once per click.
 - The JSON file remains the authoritative machine-readable run record.
 - The text report contains a complete human-readable representation of the same run.
 - Both formats include the active bank identity and base-bank question count.
