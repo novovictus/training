@@ -2,19 +2,24 @@
 
 ## Real SecAI+ banks
 
-- `../practice-test/questions.js` is the active 60-question Diagnostic v2 bank loaded by `practice-test/index.html`.
-- `secai-plus-minimal-independent-bank-v1.js` is the alternate 60-question independent bank.
+- `../practice-test/questions.js` is the shipped default bank payload and currently mirrors the canonical comprehensive bank.
+- `secai-plus-cy0-001-comprehensive-bank-v1.js` is the canonical named comprehensive bank, 168 questions.
+- `secai-plus-cy0-001-terminology-drill-bank-v1.js` is the terminology-focused drill bank, 195 questions.
+- `secai-plus-cy0-001-diagnostic-v2.js` preserves the prior Diagnostic v2 bank, 60 questions.
+- `secai-plus-minimal-independent-bank-v1.js` is the independent validation bank, 60 questions.
 
-Both use the compact row authoring format documented in `../practice-test/README.md`. The row mapper produces the runtime object schema consumed by `app.js`.
+All real banks use the compact row authoring format documented in `../practice-test/README.md`. The row mapper produces the runtime object schema consumed by `app.js`.
 
-To test the alternate bank without changing `index.html`, back up the active file and copy the alternate bank over `practice-test/questions.js`:
+Bank selection/loading is currently wired in `../practice-test/index.html`; `app.js` validates and consumes `window.SECAI_QUESTION_BANK`. Automatic discovery of newly introduced outside banks is not implemented in this baseline.
+
+For direct testing of an outside or unregistered bank, back up the shipped default and copy the desired bank over `practice-test/questions.js`:
 
 ```powershell
 Copy-Item .\practice-test\questions.js .\practice-test\questions.active.js -Force
 Copy-Item .\test-banks\secai-plus-minimal-independent-bank-v1.js .\practice-test\questions.js -Force
 ```
 
-Restore the active bank afterward:
+Restore the shipped default afterward:
 
 ```powershell
 Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
@@ -55,7 +60,7 @@ Install the 100-question fixture:
 Copy-Item .\test-banks\sample-bank-100.js .\practice-test\questions.js -Force
 ```
 
-Restore the active bank:
+Restore the shipped default:
 
 ```powershell
 Copy-Item .\practice-test\questions.active.js .\practice-test\questions.js -Force
