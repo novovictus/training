@@ -31,11 +31,13 @@ No license is granted to copy, modify, redistribute, publish, or commercially us
 
 Open `practice-test/index.html` in Google Chrome. Chrome is the only validated browser. Direct `file://` operation and local-storage persistence in other browsers are unverified.
 
-The application supports randomized question and displayed-answer order, configurable runs, exam and immediate-feedback practice modes, timers, flags, confidence ratings, per-question notes, resume, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
+The application supports randomized question and displayed-answer order, configurable runs, exam and immediate-feedback practice modes, timers, flags, confidence ratings, per-question notes, resume, explicit active-run abandonment, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
 
 Exam mode withholds correctness until final submission. Practice mode requires each answer to be submitted, locks it, and immediately shows whether it was correct before navigation continues. Completed-run exports identify the selected mode.
 
-Bank selection/loading is currently wired in `practice-test/index.html`; `practice-test/app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload. Automatic discovery of newly introduced outside banks is not implemented in this baseline.
+`Quit run` abandons only the current active attempt after confirmation. It discards that run's answers, flags, confidence ratings, notes, and elapsed progress while preserving completed history, mastery, settings, selected bank, and selected run mode.
+
+Bank loading is currently wired in `practice-test/index.html`; `practice-test/app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload. The shipped bundled source is `practice-test/questions.js`. A valid outside `.js` or `.json` bank can be opened through the Customize dialog. Automatic discovery of bank files in `test-banks/` is not implemented in this baseline.
 
 See `practice-test/README.md` for operation, compact row authoring, runtime schema, and state-safety details.
 
