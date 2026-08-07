@@ -39,9 +39,9 @@ Additional real banks are stored under `../test-banks/`:
 - `secai-plus-cy0-001-diagnostic-v2.js`: archived prior Diagnostic v2 bank, 60 questions.
 - `secai-plus-minimal-independent-bank-v1.js`: independent validation bank, 60 questions.
 
-## Canonical authoring format
+## Authoring format
 
-Real question banks use a compact row format because it is easier to scan and compare manually:
+Question banks use a compact row format because it is easier to scan and compare manually:
 
 ```javascript
 const rows = [
@@ -122,7 +122,7 @@ The Customize dialog provides two run modes.
 - The submitted answer becomes locked and cannot be changed.
 - Correct or incorrect feedback appears immediately.
 - A blank submitted response is shown as incorrect with `Your answer: Not answered`.
-- The correct option is highlighted; an incorrect selected option is highlighted separately.
+- The correct option is highlighted; an incorrectly selected option is highlighted separately.
 - After feedback, the control changes to `Next`, or `Finish run` on the last question.
 - Navigating back to a submitted question restores the locked answer and feedback.
 - Locked state survives reload and resume.
@@ -174,7 +174,7 @@ Completed runs can be exported manually from the results view with `Export run`.
 
 `Export progress` writes the full application state, including settings, mastery, history, active-run state, and any active or completed notes. `Import progress` continues to accept older exports that do not contain note fields or run-mode metadata.
 
-Canonical-answer imbalance must be corrected through content review, not cosmetic letter rotation. Displayed choices are randomized during each run.
+Answer imbalance must be corrected through content review, not cosmetic letter rotation. Displayed choices are randomized during each run.
 
 ## Fixtures
 
