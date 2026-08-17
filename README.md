@@ -79,5 +79,5 @@ Displayed answer choices are randomized during each run.
     ├── secai-plus-cy0-001-diagnostic-v2.js
     ├── secai-plus-minimal-independent-bank-v1.js
     ├── test-bank-42.js
-    ├── sample-bank-100.js
+    └── sample-bank-100.js
 ```
