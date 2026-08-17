@@ -80,5 +80,4 @@ Displayed answer choices are randomized during each run.
     ├── secai-plus-minimal-independent-bank-v1.js
     ├── test-bank-42.js
     ├── sample-bank-100.js
-    └── private/
 ```
