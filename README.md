@@ -12,10 +12,10 @@ This repository records design decisions, implementation details, validation met
 - `https://ninja-neer.net/training/` is the canonical public entry point and redirects to the practice-test application.
 - `https://ninja-neer.net/training/practice-test/` is the direct application URL.
 - `practice-test/` contains the static browser application used during validation and deployment.
-- `practice-test/questions.js` is the shipped default bank payload and currently mirrors the canonical comprehensive bank.
-- `test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js` is the default comprehensive bank.
+- `practice-test/questions.js` is the shipped default bank payload and currently mirrors Diagnostic v2.
+- `test-banks/secai-plus-cy0-001-diagnostic-v2.js` is the source-of-record Diagnostic v2 bank.
+- `test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js` is the larger comprehensive bank.
 - `test-banks/secai-plus-cy0-001-terminology-drill-bank-v1.js` is the terminology-focused drill bank.
-- `test-banks/secai-plus-cy0-001-diagnostic-v2.js` preserves the prior Diagnostic v2 bank.
 - `test-banks/secai-plus-minimal-independent-bank-v1.js` is the independent validation bank.
 - `test-banks/` also contains deterministic application fixtures used for engine validation.
 
@@ -92,7 +92,7 @@ See `LOCAL-TESTING.md` for additional local-testing and browser-origin details.
 
 The application consists of ordinary static files, so opening `practice-test/index.html` directly from an extracted repository may still run the application with a `file://` URL.
 
-Direct filesystem execution is not the supported development or persistent-use workflow.
+Direct filesystem execution is not the supported development or persistent-use workflow. The application displays a warning when launched through `file://` and points users to the hosted site for normal use or localhost for development and validation.
 
 Browser behavior under `file://` can differ from HTTP/HTTPS, particularly for:
 
@@ -105,13 +105,21 @@ Use the live GitHub Pages deployment for normal use and a localhost HTTP server 
 
 ## Application
 
-The application supports randomized question and displayed-answer order, configurable runs, exam and immediate-feedback practice modes, timers, flags, confidence ratings, per-question notes, resume, explicit active-run abandonment, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
+The application supports randomized question and displayed-answer order, configurable runs, exam and immediate-feedback practice modes, timers, flags, confidence ratings, per-question notes, resume, explicit active-run abandonment, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity isolation.
 
 Exam mode withholds correctness until final submission. Practice mode requires each answer to be submitted, locks it, and immediately shows whether it was correct before navigation continues. Completed-run exports identify the selected mode.
 
 `Quit run` abandons only the current active attempt after confirmation. It discards that run's answers, flags, confidence ratings, notes, and elapsed progress while preserving completed history, mastery, settings, selected bank, and selected run mode.
 
 Bank loading currently lives in `practice-test/index.html`; `practice-test/app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` bank. The shipped bundled source is `practice-test/questions.js`. A valid outside `.js` or `.json` bank can be opened through the Customize dialog.
+
+Training state is stored directly by `app.js` under a canonical bank/version key:
+
+```text
+secai-plus-test-engine-v2:<bankId>:<bankVersion>
+```
+
+Legacy bank-ID-only and historical generic state are migrated only when their stored bank identity exactly matches the loaded bank. Legacy keys are retained during stabilization for rollback safety.
 
 ## Progress and portability
 
@@ -135,20 +143,20 @@ See `practice-test/README.md` for operation, compact row authoring, runtime sche
 
 ## Default bank
 
-`practice-test/questions.js` currently mirrors the comprehensive bank:
+`practice-test/questions.js` currently mirrors Diagnostic v2:
 
 ```text
-bankId: secai-plus-cy0-001-comprehensive-v1
-bankVersion: 1.0.0
-questions: 168
+bankId: secai-plus-cy0-001-v2
+bankVersion: 2.0.0
+questions: 60
 ```
 
-The named source of record is `test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
+The named source of record is `test-banks/secai-plus-cy0-001-diagnostic-v2.js`.
 
 ## Additional banks
 
+- `test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`: comprehensive bank, 168 questions.
 - `test-banks/secai-plus-cy0-001-terminology-drill-bank-v1.js`: terminology-focused drill bank, 195 questions.
-- `test-banks/secai-plus-cy0-001-diagnostic-v2.js`: archived prior Diagnostic v2 bank, 60 questions.
 - `test-banks/secai-plus-minimal-independent-bank-v1.js`: independent validation bank, 60 questions.
 
 All banks are working self-validation content. Validate stems, distractors, answer keys, targets, and mappings during use and revise under zero-trust review.
