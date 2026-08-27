@@ -1,14 +1,71 @@
 # Local testing
 
-Download or copy these files into the same folder:
+The practice test is now intended to run over HTTP or HTTPS rather than directly from the filesystem.
 
-- `index.html`
-- `styles.css`
-- `questions.js`
-- `app.js`
+## Normal use
 
-Double-click `index.html` to run the test in a browser. No web server, installation, account, or internet connection is required.
+Use the deployed GitHub Pages application:
 
-The same files can also be served unchanged from GitHub Pages or any ordinary static web host.
+```text
+https://ninja-neer.net/training/
+```
 
-Progress is stored by the browser for the location from which the test is opened. A locally opened copy and a hosted copy therefore maintain separate progress histories. Use the built-in export and import controls to move progress between them.
+That entry point redirects to:
+
+```text
+https://ninja-neer.net/training/practice-test/
+```
+
+The hosted HTTPS application is the supported persistent-use environment.
+
+## Local development
+
+From the repository root, start an ordinary static HTTP server. For example:
+
+```powershell
+python -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000/practice-test/
+```
+
+No build process, backend, package manager, or application installation is required.
+
+The application files remain ordinary static files:
+
+- `practice-test/index.html`
+- `practice-test/styles.css`
+- `practice-test/questions.js`
+- `practice-test/app.js`
+
+## Direct file launch
+
+Opening `practice-test/index.html` directly with a `file://` URL may still run the application, but it is not the supported persistent-use or development path.
+
+Direct-file browser behavior can differ from HTTP/HTTPS behavior, particularly for:
+
+- local-storage origin handling
+- programmatic downloads
+- persistence when files or directories move
+- behavior across browsers and browser profiles
+
+Use localhost when testing local code changes.
+
+## Progress and browser origins
+
+Browser local storage belongs to the origin from which the application is opened. These are separate storage environments:
+
+```text
+file://...
+http://localhost:8000
+https://ninja-neer.net
+```
+
+Progress does not automatically move between them.
+
+Local storage is automatic working state, not a durable backup. Use `Export progress` to create the portable recovery record and `Import progress` to restore it into another browser origin, browser profile, or environment.
+
+The GitHub Pages migration was validated by importing existing local progress into the hosted application and confirming that the imported state survived closing and reopening the application.
