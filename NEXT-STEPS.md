@@ -2,36 +2,67 @@
 
 State captured: 2026-08-27
 
-This file records the agreed stabilization and hosting work to complete before additional practice-test changes are attempted.
+This file records the stabilization work completed before the next practice-test development pass and the remaining persistence work.
 
-## 1. Host the existing repository with GitHub Pages
+## Completed: GitHub Pages hosting and origin migration
 
-Use the existing `novovictus/training` repository as both the source repository and the GitHub Pages source. No separate repository, build system, backend, or package manager is required.
+The existing `novovictus/training` repository is deployed directly as a GitHub Pages project site. No separate application repository, build system, backend, or package manager is required.
 
-Expected hosted practice-test path:
+Canonical public entry point:
 
 ```text
-https://novovictus.github.io/training/practice-test/
+https://ninja-neer.net/training/
 ```
 
-Normal-user execution should move from direct `file://` launch to GitHub Pages over HTTPS.
+The project root redirects to the application:
 
-Development and local testing should use localhost, for example:
+```text
+https://ninja-neer.net/training/practice-test/
+```
+
+The custom domain on the `novovictus.github.io` user site is inherited by the `novovictus/training` project site. No separate DNS record is required for the `/training/` path.
+
+The hosted HTTPS application is the supported normal-use environment and is intended for the live online audience.
+
+The migration was smoke-tested successfully by:
+
+1. Loading the hosted application over HTTPS.
+2. Loading the terminology bank.
+3. Importing existing local progress.
+4. Confirming the imported progress and mastery state.
+5. Closing and reopening the hosted application.
+6. Confirming that state remained preserved.
+7. Loading the deployed application successfully in Firefox as an additional smoke test.
+
+This establishes the GitHub Pages deployment and HTTPS browser origin as the current normal-use baseline.
+
+## Completed: local development workflow documentation
+
+Local execution is for development and validation.
+
+A developer can clone the repository or download and extract the repository ZIP, then run an ordinary static HTTP server from the repository root. For example:
 
 ```powershell
-cd C:\Users\plays\source\github_training\training
 python -m http.server 8000
 ```
 
-Then open:
+Open:
+
+```text
+http://localhost:8000/
+```
+
+The root redirects to:
 
 ```text
 http://localhost:8000/practice-test/
 ```
 
-Direct `file://` launch should no longer be treated as the normal persistent-use path.
+Direct `file://` execution may still function but is not the supported persistent-use or development workflow.
 
-## 2. Add a direct-file warning
+Browser local storage remains origin-specific. State does not automatically move between `file://`, localhost, and the hosted HTTPS origin. `Export progress` and `Import progress` are the supported portability and origin-migration mechanism.
+
+## Pending: add a direct-file warning
 
 If the application detects:
 
@@ -48,7 +79,7 @@ show a visible warning explaining that:
 
 The application does not need to refuse to run under `file://`, but users should not mistake it for the recommended persistent environment.
 
-## 3. Clean up persistence ownership
+## Pending: clean up persistence ownership
 
 Current behavior spans two layers.
 
@@ -108,7 +139,7 @@ Then `app.js` should directly read and write that bank/version-specific key.
 
 The exact key formatting may change, but bank ID and bank version should define the canonical training-state identity consistently.
 
-## 4. Remove generic-key state shuffling from index.html
+## Pending: remove generic-key state shuffling from index.html
 
 Once `app.js` directly owns bank-scoped persistence, remove the need for `index.html` to move progress into and out of the generic working key.
 
@@ -130,7 +161,7 @@ should no longer be required for training-state persistence.
 
 It should not have to proxy completed attempts, mastery, active attempts, or other training state between storage namespaces.
 
-## 5. Keep application-level preferences separate from bank training state
+## Pending: keep application-level preferences separate from bank training state
 
 Some storage is legitimately application-global.
 
@@ -159,9 +190,9 @@ The current separate run-mode key should also be reviewed. A cleaner model may b
 secai-plus-run-mode:<bankId>
 ```
 
-This is a cleanup opportunity, not a requirement for the first hosted release if changing it would add unnecessary risk.
+This is a cleanup opportunity rather than a requirement if changing it adds unnecessary risk.
 
-## 6. Preserve backward-compatible migration
+## Pending: preserve backward-compatible storage migration
 
 Do not simply replace the storage-key format and discard existing browser state.
 
@@ -178,19 +209,19 @@ The new persistence layer should use a one-time compatibility path similar to:
 
 Initially, legacy keys may be left in place after successful migration rather than immediately deleted. Storage cost is negligible and preserving them provides rollback safety during stabilization.
 
-## 7. Treat origin migration separately from storage-schema migration
+## Origin migration versus storage-schema migration
 
-Moving from `file://` to GitHub Pages creates a different browser origin.
+The browser-origin migration is complete. The storage-schema migration is not.
 
-Existing browser-local state under a direct-file origin will not automatically appear at:
+Existing browser-local state under a direct-file or localhost origin does not automatically appear at:
 
 ```text
-https://novovictus.github.io
+https://ninja-neer.net
 ```
 
-This is expected browser behavior, not another rollback or corruption event.
+This is expected browser behavior.
 
-The existing progress export/import mechanism is the supported portability and recovery path:
+The existing progress export/import mechanism remains the supported portability and recovery path:
 
 ```text
 old browser origin
@@ -208,73 +239,29 @@ Import Progress
 new HTTPS localStorage state
 ```
 
-Do not attempt to infer or reconstruct historical mastery solely from stale browser-local counts. Exported run records and the project SITREP remain the historical evidence.
+Do not attempt to infer or reconstruct historical mastery solely from stale browser-local counts. Exported run records and project documentation remain the historical evidence.
 
-## 8. Resolve the bundled-bank documentation mismatch
+## Default-bank documentation status
 
-Before release, reconcile the current default-bank inconsistency.
-
-Current implementation and documentation have diverged between at least:
+Current repository documentation identifies the bundled default as:
 
 ```text
-secai-plus-cy0-001-v2
-Diagnostic v2
-60 questions
+bankId: secai-plus-cy0-001-comprehensive-v1
+bankVersion: 1.0.0
+questions: 168
 ```
 
-and documentation describing:
+The named source of record is:
 
 ```text
-secai-plus-cy0-001-comprehensive-v1
-Comprehensive v1
-168 questions
+test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js
 ```
 
-Determine which bank is intended to ship as:
+Before changing the bundled bank in future development, verify `practice-test/questions.js`, bundled-bank metadata in `practice-test/index.html`, `practice-test/README.md`, and the named source-of-record bank together rather than changing only one representation.
 
-```text
-practice-test/questions.js
-```
+## Validation checklist for the persistence development pass
 
-Then make the following agree:
-
-- `practice-test/questions.js`
-- bundled-bank metadata in `practice-test/index.html`
-- `practice-test/README.md`
-- any root documentation that identifies the production/default bank
-
-Do not resolve this by blindly changing only one file. Verify the actual source-of-record bank under `test-banks/` first.
-
-## 9. Documentation updates
-
-Update repository documentation to clearly state the supported execution model.
-
-### Normal users
-
-Use GitHub Pages over HTTPS.
-
-### Developers
-
-Use localhost for local development and validation.
-
-### Direct file launch
-
-Document `file://` as unsupported or unreliable for persistent use because:
-
-- browser storage is origin-specific
-- local-file origins can behave differently from HTTP/HTTPS origins
-- programmatic download behavior may be restricted
-- switching origins creates a separate localStorage namespace
-
-Also make clear that:
-
-- localStorage is automatic working state, not a durable backup
-- exported progress JSON is the durable portable record
-- import is the supported restoration and origin-migration mechanism
-
-## 10. Validation checklist before considering the hosted iteration complete
-
-After the persistence cleanup and GitHub Pages deployment, validate all of the following in the hosted HTTPS application:
+After the persistence cleanup, validate all of the following in the hosted HTTPS application and, where appropriate, the localhost development environment:
 
 - application loads successfully from GitHub Pages
 - bundled bank loads correctly
@@ -296,12 +283,12 @@ After the persistence cleanup and GitHub Pages deployment, validate all of the f
 - import progress restores valid state
 - incompatible-bank import remains blocked
 - reset affects only the intended bank state
-- direct `file://` launch displays the warning
+- direct `file://` launch displays the warning after that warning is implemented
 - localhost continues to work for development
 
-## 11. Scope control
+## Scope control
 
-This stabilization pass should not redesign unrelated behavior.
+The persistence stabilization pass should not redesign unrelated behavior.
 
 Do not change the following unless validation reveals a concrete defect:
 
@@ -315,7 +302,7 @@ Do not change the following unless validation reveals a concrete defect:
 - run export schema
 - training-bank content
 
-The immediate goal is a stable hosted execution model and a single clear owner for persistence, not a broader engine rewrite.
+The immediate remaining goal is a single clear owner for persistence and safe migration of existing state, not a broader engine rewrite.
 
 ## Target architecture
 
@@ -338,4 +325,4 @@ The immediate goal is a stable hosted execution model and a single clear owner f
                           bank-specific state
 ```
 
-The GitHub Pages migration addresses the browser-origin problem. The persistence refactor addresses the application-architecture problem. Both should be completed and validated independently before additional feature work proceeds.
+The GitHub Pages migration has addressed the browser-origin problem. The remaining persistence refactor addresses the application-architecture problem.
