@@ -8,6 +8,9 @@ This repository records design decisions, implementation details, validation met
 
 ## Current state
 
+- The practice test is deployed as a GitHub Pages project site.
+- `https://ninja-neer.net/training/` is the canonical user entry point and redirects to the practice-test application.
+- `https://ninja-neer.net/training/practice-test/` is the direct application URL.
 - `practice-test/` contains the static browser application used during validation.
 - `practice-test/questions.js` is the shipped default bank payload and currently mirrors the canonical comprehensive bank.
 - `test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js` is the default comprehensive bank.
@@ -28,7 +31,21 @@ No license is granted to copy, modify, redistribute, publish, or commercially us
 
 ## Application
 
-Open `practice-test/index.html` in Google Chrome. Chrome is the only validated browser. Direct `file://` operation and local-storage persistence in other browsers are unverified.
+For normal use, open:
+
+```text
+https://ninja-neer.net/training/
+```
+
+The repository root redirects to:
+
+```text
+https://ninja-neer.net/training/practice-test/
+```
+
+The application is a static GitHub Pages project site. The custom domain on the `novovictus.github.io` user site is inherited by the `novovictus/training` project site, so no separate DNS record is required for the `/training/` path.
+
+Google Chrome remains the primary validated browser. Firefox has also been used successfully as a deployment smoke test. HTTPS is the supported normal-use environment. Local development should use an HTTP localhost server. Direct `file://` launch is retained only as an unreliable compatibility path and should not be used as the authoritative persistent environment.
 
 The application supports randomized question and displayed-answer order, configurable runs, exam and immediate-feedback practice modes, timers, flags, confidence ratings, per-question notes, resume, explicit active-run abandonment, review, mastery, history, dual-format completed-run export, progress export/import, and bank identity mismatch protection.
 
@@ -36,8 +53,11 @@ Exam mode withholds correctness until final submission. Practice mode requires e
 
 `Quit run` abandons only the current active attempt after confirmation. It discards that run's answers, flags, confidence ratings, notes, and elapsed progress while preserving completed history, mastery, settings, selected bank, and selected run mode.
 
-Bank loading currently in `practice-test/index.html`; `practice-test/app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` bank. The shipped bundled source is `practice-test/questions.js`. A valid outside `.js` or `.json` bank can be opened through the Customize dialog.
-See `practice-test/README.md` for operation, compact row authoring, runtime schema, and state-safety details.
+Bank loading currently lives in `practice-test/index.html`; `practice-test/app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` bank. The shipped bundled source is `practice-test/questions.js`. A valid outside `.js` or `.json` bank can be opened through the Customize dialog.
+
+Browser local storage is automatic working state, not a durable backup. `Export progress` is the portable recovery record, and `Import progress` is the supported way to restore state or move it between browser origins, profiles, or environments. The GitHub Pages migration was validated by loading the terminology bank, importing existing local progress, closing and reopening the hosted application, and confirming that state remained preserved.
+
+See `practice-test/README.md` for operation, compact row authoring, runtime schema, state-safety details, and local-development guidance.
 
 ## Default bank
 
@@ -66,6 +86,9 @@ Displayed answer choices are randomized during each run.
 ```text
 .
 ├── README.md
+├── NEXT-STEPS.md
+├── LOCAL-TESTING.md
+├── index.html
 ├── practice-test/
 │   ├── README.md
 │   ├── index.html
