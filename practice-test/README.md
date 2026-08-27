@@ -42,7 +42,7 @@ http://localhost:8000/practice-test/
 
 The local HTTP-hosted copy is intended for development and validation, not as the normal audience-facing deployment.
 
-Direct `file://` launch of `practice-test/index.html` may still work, but it is not the supported persistent-use or development path because browser storage and download behavior can differ from HTTP/HTTPS.
+Direct `file://` launch of `practice-test/index.html` may still work, but it is not the supported persistent-use or development path because browser storage and download behavior can differ from HTTP/HTTPS. The application displays a visible warning under `file://` without blocking execution.
 
 See `../LOCAL-TESTING.md` for the complete local workflow and browser-origin guidance.
 
@@ -57,26 +57,26 @@ app.js
 questions.js
 ```
 
-Bank loading is currently wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload.
+Bank loading is wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload and owns bank-specific training-state persistence.
 
-`questions.js` is the shipped default bank payload. It currently mirrors the canonical named comprehensive bank at `../test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
+`questions.js` is the shipped default bank payload. It currently mirrors Diagnostic v2 at `../test-banks/secai-plus-cy0-001-diagnostic-v2.js`.
 
 A valid outside `.js` or `.json` bank can be opened through Customize > Open bank file. The selected custom bank is retained in browser local storage until `Use bundled bank` is selected. Automatic discovery of bank files under `../test-banks/` is not implemented in this baseline.
 
 ## Default bank
 
 ```text
-bankId: secai-plus-cy0-001-comprehensive-v1
-bankVersion: 1.0.0
-questions: 168
+bankId: secai-plus-cy0-001-v2
+bankVersion: 2.0.0
+questions: 60
 ```
 
-The named source of record is `../test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
+The named source of record is `../test-banks/secai-plus-cy0-001-diagnostic-v2.js`.
 
 Additional real banks are stored under `../test-banks/`:
 
+- `secai-plus-cy0-001-comprehensive-bank-v1.js`: comprehensive bank, 168 questions.
 - `secai-plus-cy0-001-terminology-drill-bank-v1.js`: terminology-focused drill bank, 195 questions.
-- `secai-plus-cy0-001-diagnostic-v2.js`: archived prior Diagnostic v2 bank, 60 questions.
 - `secai-plus-minimal-independent-bank-v1.js`: independent validation bank, 60 questions.
 
 ## Authoring format
@@ -139,9 +139,17 @@ Validate stems, distractors, answer keys, targets, and mappings during use and r
 
 ## State safety
 
-Progress is associated with `bankId` and `bankVersion`. Loading a different bank triggers a blocking mismatch warning. Export existing progress if needed, then reset local progress for the newly loaded bank.
+Training state is isolated by both `bankId` and `bankVersion`. `app.js` derives the canonical local-storage key directly from the loaded bank:
 
-The application stores settings, mastery, attempts, active-run state, run mode, selected custom-bank data, and practice-mode answer-lock state in browser local storage.
+```text
+secai-plus-test-engine-v2:<bankId>:<bankVersion>
+```
+
+If no canonical state exists, the application checks the previous bank-ID-only key and then the historical generic key. Legacy state is copied into the canonical key only when its stored `bankId` and `bankVersion` exactly match the loaded bank. Incompatible legacy state is ignored rather than silently reused. Legacy keys are retained during stabilization for rollback safety.
+
+Importing progress remains identity-checked and rejects incompatible bank data. Loading a different bank or bank version normally starts or restores that bank/version's independent state rather than blocking on unrelated stored progress.
+
+The application stores settings, mastery, attempts, active-run state, run mode, selected custom-bank data, and practice-mode answer-lock state in browser local storage. Run-mode preference remains stored separately per bank; moving it into the canonical state record was intentionally deferred because it was not required for the persistence cleanup.
 
 Browser local storage is origin-specific. `file://`, `http://localhost:8000`, and `https://ninja-neer.net` are separate storage environments. `Export progress` and `Import progress` are the supported portability and origin-migration mechanism.
 
