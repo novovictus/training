@@ -1,14 +1,48 @@
-# Run the practice test locally
+# SecAI+ practice test
 
-The practice test is a static browser application. It requires no build process, backend, package manager, or web server.
+The practice test is a static browser application. It requires no build process, backend, package manager, or application installation.
 
-## Validated browser
+## Normal use
 
-Google Chrome is the validated browser. Direct `file://` operation and local-storage persistence have been tested only in Chrome. Export progress before changing browsers, browser profiles, or the application directory.
+Use the hosted GitHub Pages application:
+
+```text
+https://ninja-neer.net/training/
+```
+
+The repository root redirects to the direct application URL:
+
+```text
+https://ninja-neer.net/training/practice-test/
+```
+
+HTTPS is the supported normal-use environment.
+
+## Browser validation
+
+Google Chrome remains the primary validated browser. Firefox has also been used successfully as a deployment smoke test.
+
+Direct `file://` operation is not the supported persistent-use path. Local development should use an HTTP localhost server. Export progress before changing browser origins, browser profiles, or other storage environments.
+
+## Local development
+
+From the repository root:
+
+```powershell
+python -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000/practice-test/
+```
+
+See `../LOCAL-TESTING.md` for the execution and browser-origin model.
 
 ## Required files
 
-Keep these files together:
+The application consists of:
 
 ```text
 index.html
@@ -17,7 +51,7 @@ app.js
 questions.js
 ```
 
-Open `index.html` in Chrome. Bank loading is currently wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload.
+Bank loading is currently wired in `index.html`; `app.js` validates and consumes the resulting `window.SECAI_QUESTION_BANK` payload.
 
 `questions.js` is the shipped default bank payload. It currently mirrors the canonical named comprehensive bank at `../test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js`.
 
@@ -102,6 +136,10 @@ Validate stems, distractors, answer keys, targets, and mappings during use and r
 Progress is associated with `bankId` and `bankVersion`. Loading a different bank triggers a blocking mismatch warning. Export existing progress if needed, then reset local progress for the newly loaded bank.
 
 The application stores settings, mastery, attempts, active-run state, run mode, selected custom-bank data, and practice-mode answer-lock state in browser local storage.
+
+Browser local storage is automatic working state, not a durable backup. Storage is scoped to the browser origin, so `file://`, localhost, and `https://ninja-neer.net` do not automatically share progress. `Export progress` is the portable recovery record; `Import progress` is the supported restoration and origin-migration mechanism.
+
+The hosted migration has been smoke-tested by loading the terminology bank, importing existing local progress into the HTTPS application, closing the application, reopening it, and confirming that state remained preserved.
 
 `Quit run` abandons only the current active attempt after confirmation. It clears that attempt's answers, flags, confidence ratings, notes, timer state, and resume state. It does not remove completed attempts, mastery, settings, selected bank, or selected run mode.
 
