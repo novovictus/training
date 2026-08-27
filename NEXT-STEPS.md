@@ -2,11 +2,11 @@
 
 State captured: 2026-08-27
 
-This file records the stabilization work completed before the next practice-test development pass and the remaining persistence work.
+This file records the current stabilized application architecture, completed deployment and persistence work, and remaining field validation.
 
 ## Completed: GitHub Pages hosting and origin migration
 
-The existing `novovictus/training` repository is deployed directly as a GitHub Pages project site. No separate application repository, build system, backend, or package manager is required.
+The `novovictus/training` repository is deployed directly as a GitHub Pages project site. No separate application repository, build system, backend, or package manager is required.
 
 Canonical public entry point:
 
@@ -14,33 +14,21 @@ Canonical public entry point:
 https://ninja-neer.net/training/
 ```
 
-The project root redirects to the application:
+The project root redirects to:
 
 ```text
 https://ninja-neer.net/training/practice-test/
 ```
 
-The custom domain on the `novovictus.github.io` user site is inherited by the `novovictus/training` project site. No separate DNS record is required for the `/training/` path.
+The custom domain on the `novovictus.github.io` user site is inherited by the `novovictus/training` project site. No separate DNS record is required for `/training/`.
 
-The hosted HTTPS application is the supported normal-use environment and is intended for the live online audience.
+The hosted HTTPS application is the supported normal-use environment for the live online audience.
 
-The migration was smoke-tested successfully by:
+The origin migration was smoke-tested successfully by loading the hosted application, loading the terminology bank, importing existing local progress, confirming mastery/progress, closing and reopening the application, and confirming that state remained preserved. Firefox was also used successfully as an independent deployment smoke test.
 
-1. Loading the hosted application over HTTPS.
-2. Loading the terminology bank.
-3. Importing existing local progress.
-4. Confirming the imported progress and mastery state.
-5. Closing and reopening the hosted application.
-6. Confirming that state remained preserved.
-7. Loading the deployed application successfully in Firefox as an additional smoke test.
+## Completed: local development workflow
 
-This establishes the GitHub Pages deployment and HTTPS browser origin as the current normal-use baseline.
-
-## Completed: local development workflow documentation
-
-Local execution is for development and validation.
-
-A developer can clone the repository or download and extract the repository ZIP, then run an ordinary static HTTP server from the repository root. For example:
+Local execution is for development and validation. Clone the repository or download/extract the repository ZIP, then run an ordinary static HTTP server from the repository root, for example:
 
 ```powershell
 python -m http.server 8000
@@ -58,170 +46,98 @@ The root redirects to:
 http://localhost:8000/practice-test/
 ```
 
-Direct `file://` execution may still function but is not the supported persistent-use or development workflow.
+Browser local storage remains origin-specific. State does not automatically move between `file://`, localhost, and the hosted HTTPS origin. `Export progress` and `Import progress` remain the supported portability and origin-migration mechanism.
 
-Browser local storage remains origin-specific. State does not automatically move between `file://`, localhost, and the hosted HTTPS origin. `Export progress` and `Import progress` are the supported portability and origin-migration mechanism.
+## Completed: direct-file warning
 
-## Pending: add a direct-file warning
-
-If the application detects:
+The application now detects:
 
 ```javascript
 location.protocol === 'file:'
 ```
 
-show a visible warning explaining that:
+and displays a visible, non-blocking warning. It explains that direct-file launch is not the supported persistent-use or development path, that local-storage/download behavior may differ under `file://`, and directs normal users to the hosted application and developers to localhost.
 
-- browser storage behavior may be unreliable under `file://`
-- programmatic downloads may be suppressed or blocked
-- GitHub Pages over HTTPS is the supported normal-user path
-- localhost is the supported development and local-testing path
+Direct-file execution remains available as a compatibility path.
 
-The application does not need to refuse to run under `file://`, but users should not mistake it for the recommended persistent environment.
+## Completed: persistence ownership cleanup
 
-## Pending: clean up persistence ownership
+Implemented on `main` in commit `6bd3255` (`refactor: scope persistence by bank version`).
 
-Current behavior spans two layers.
-
-`practice-test/app.js` directly reads and writes the generic key:
+`practice-test/app.js` now owns training-state persistence directly. The canonical storage key includes both bank identity components:
 
 ```text
-secai-plus-test-engine-v2
-```
-
-At the same time, `practice-test/index.html` wraps that generic key with bank-specific archival keys such as:
-
-```text
-secai-plus-test-engine-v2:<bankId>
-```
-
-The current flow is effectively:
-
-```text
-bank-specific state
-        |
-        v
-index.html copies state
-        |
-        v
-generic working key
-        |
-        v
-      app.js
-        |
-        v
-generic working key
-        |
-        v
-index.html copies state back
-```
-
-This was a practical compatibility layer for adding multiple-bank support, but it creates unnecessary indirection and splits persistence responsibility between `index.html` and `app.js`.
-
-The target architecture is for `app.js` to own training-state persistence directly.
-
-The engine should derive the canonical storage key from the loaded bank identity, using both:
-
-```text
-bankId
-bankVersion
+secai-plus-test-engine-v2:<bankId>:<bankVersion>
 ```
 
 Conceptually:
 
 ```javascript
 function progressStorageKey() {
-  return `secai-plus-test-engine-v2:${bankConfig.bankId}:${bankConfig.bankVersion}`;
+  return `${STORAGE_KEY_PREFIX}:${bankConfig.bankId}:${bankConfig.bankVersion}`;
 }
 ```
 
-Then `app.js` should directly read and write that bank/version-specific key.
+This makes each bank version an independent persistence namespace. A bank or version with no compatible stored state starts fresh rather than being blocked by unrelated progress from another bank.
 
-The exact key formatting may change, but bank ID and bank version should define the canonical training-state identity consistently.
+`practice-test/index.html` no longer moves training state through the historical generic working key. The previous `archiveCurrent()` / `activateState()` copy-in/copy-out layer and page-hide archival dependency were removed.
 
-## Pending: remove generic-key state shuffling from index.html
+`index.html` remains responsible for bootstrap concerns:
 
-Once `app.js` directly owns bank-scoped persistence, remove the need for `index.html` to move progress into and out of the generic working key.
-
-Specifically, the current responsibilities represented by functions such as:
-
-```text
-archiveCurrent()
-activateState()
-```
-
-should no longer be required for training-state persistence.
-
-`index.html` should remain responsible only for bootstrap and bank-selection concerns, such as:
-
-- which bank source is selected
+- selected bundled/custom bank source
+- retained custom-bank payload
 - loading the bundled bank
-- retaining a selected custom bank
-- switching between bundled and custom banks
+- switching between bundled and custom sources
 
-It should not have to proxy completed attempts, mastery, active attempts, or other training state between storage namespaces.
-
-## Pending: keep application-level preferences separate from bank training state
-
-Some storage is legitimately application-global.
-
-Examples include:
+Application-global bootstrap keys remain separate:
 
 ```text
 secai-plus-selected-bank-source
 secai-plus-custom-bank
 ```
 
-These represent bank-selection and application bootstrap preferences rather than mastery or run history, so they can remain outside the bank-specific progress record.
+## Completed: backward-compatible storage migration
 
-Training state should remain bank-specific, including items such as:
+The application preserves existing compatible browser state using this precedence:
 
-- mastery
-- attempt history
-- active attempt
-- question-count setting
-- include-mastered setting
-- timer setting
-- other bank-specific practice settings
+1. canonical bank/version key
+2. previous bank-ID-only key
+3. historical generic key
+4. fresh default state
 
-The current separate run-mode key should also be reviewed. A cleaner model may be to keep run mode inside the bank-specific settings/state rather than under an additional key such as:
+Legacy state is migrated only when its embedded `bankId` and `bankVersion` exactly match the currently loaded bank. Incompatible state is ignored rather than relabeled or silently reused.
+
+A compatible legacy record is copied into the canonical bank/version key. Legacy keys are intentionally left in place during stabilization because storage cost is negligible and retaining them provides rollback safety.
+
+Migration is idempotent and does not depend on page-hide or browser-shutdown timing.
+
+Existing progress-export files remain the portability/recovery format. Import continues to validate bank identity before accepting state and saves valid imported state through the canonical persistence path.
+
+## Deferred: run-mode storage consolidation
+
+Run-mode preference remains under the separate per-bank namespace:
 
 ```text
 secai-plus-run-mode:<bankId>
 ```
 
-This is a cleanup opportunity rather than a requirement if changing it adds unnecessary risk.
+Moving run mode into the canonical training-state record was optional and was intentionally deferred because it was not required to eliminate the generic-state shuffling architecture. Active attempts continue to carry their run mode, and existing behavior is preserved.
 
-## Pending: preserve backward-compatible storage migration
-
-Do not simply replace the storage-key format and discard existing browser state.
-
-The new persistence layer should use a one-time compatibility path similar to:
-
-1. Look for the new canonical bank/version-specific key.
-2. If present and valid, use it.
-3. Otherwise look for the existing bank-ID-only scoped key.
-4. Validate the embedded `bankId` and `bankVersion` before migration.
-5. If valid, copy or migrate it to the new canonical key.
-6. Otherwise inspect the historical generic key.
-7. Validate it against the currently loaded bank before migration.
-8. Never silently import state belonging to another bank or bank version.
-
-Initially, legacy keys may be left in place after successful migration rather than immediately deleted. Storage cost is negligible and preserving them provides rollback safety during stabilization.
+This can be reconsidered later if there is a concrete maintenance or behavioral reason to consolidate it.
 
 ## Origin migration versus storage-schema migration
 
-The browser-origin migration is complete. The storage-schema migration is not.
+Both migrations are now implemented, but they solve different problems.
 
-Existing browser-local state under a direct-file or localhost origin does not automatically appear at:
+Browser-origin migration remains explicit because browser security boundaries prevent state from automatically moving between:
 
 ```text
+file://...
+http://localhost:8000
 https://ninja-neer.net
 ```
 
-This is expected browser behavior.
-
-The existing progress export/import mechanism remains the supported portability and recovery path:
+The supported cross-origin path remains:
 
 ```text
 old browser origin
@@ -239,58 +155,61 @@ Import Progress
 new HTTPS localStorage state
 ```
 
-Do not attempt to infer or reconstruct historical mastery solely from stale browser-local counts. Exported run records and project documentation remain the historical evidence.
+Storage-schema migration occurs automatically within an origin when compatible legacy state is found and moves that state into the canonical `bankId + bankVersion` namespace.
 
-## Default-bank documentation status
+## Bundled default bank
 
-Current repository documentation identifies the bundled default as:
+The shipped `practice-test/questions.js` payload is currently Diagnostic v2:
 
 ```text
-bankId: secai-plus-cy0-001-comprehensive-v1
-bankVersion: 1.0.0
-questions: 168
+bankId: secai-plus-cy0-001-v2
+bankVersion: 2.0.0
+questions: 60
 ```
 
-The named source of record is:
+Its source of record is:
+
+```text
+test-banks/secai-plus-cy0-001-diagnostic-v2.js
+```
+
+The larger comprehensive bank remains available separately:
 
 ```text
 test-banks/secai-plus-cy0-001-comprehensive-bank-v1.js
 ```
 
-Before changing the bundled bank in future development, verify `practice-test/questions.js`, bundled-bank metadata in `practice-test/index.html`, `practice-test/README.md`, and the named source-of-record bank together rather than changing only one representation.
+Before changing the bundled bank in future development, verify `practice-test/questions.js`, bundled-bank metadata in `practice-test/index.html`, `practice-test/README.md`, and the intended source-of-record bank together.
 
-## Validation checklist for the persistence development pass
+## Post-change field validation
 
-After the persistence cleanup, validate all of the following in the hosted HTTPS application and, where appropriate, the localhost development environment:
+The implementation is complete. Continue exercising the deployed HTTPS application and localhost development copy, with particular attention to:
 
 - application loads successfully from GitHub Pages
-- bundled bank loads correctly
+- bundled bank loads with the correct identity and count
 - custom bank loading works
-- switching banks preserves each bank's own state
+- switching banks preserves each bank's independent state
 - switching bank versions does not silently reuse incompatible progress
-- progress survives page reload
+- compatible legacy state migrates to the canonical key
+- progress survives reload and normal browser restart
 - active attempts survive reload and resume
-- progress survives normal browser restart
-- mastery counts remain correct
-- completed attempt history remains correct
-- practice mode still locks submitted answers
-- exam mode still allows normal answer revision until submission
-- blank practice answers still behave as designed
+- mastery counts and completed history remain correct
+- practice mode retains submitted-answer locks
+- exam mode retains normal answer revision until submission
 - quit-run behavior discards only the active run
 - run-mode behavior remains correct
 - export progress downloads successfully
-- export run downloads JSON and text reports successfully
-- import progress restores valid state
-- incompatible-bank import remains blocked
-- reset affects only the intended bank state
-- direct `file://` launch displays the warning after that warning is implemented
+- import progress restores compatible state and rejects incompatible banks
+- export run continues to produce JSON and text reports
+- reset affects only the intended canonical bank/version state
+- direct `file://` launch displays the warning while remaining usable
 - localhost continues to work for development
+
+Failures found during field use should be treated as concrete defects and fixed narrowly rather than triggering a broader rewrite.
 
 ## Scope control
 
-The persistence stabilization pass should not redesign unrelated behavior.
-
-Do not change the following unless validation reveals a concrete defect:
+The persistence stabilization pass did not intentionally redesign:
 
 - question-bank schema
 - mastery threshold or algorithm
@@ -302,9 +221,9 @@ Do not change the following unless validation reveals a concrete defect:
 - run export schema
 - training-bank content
 
-The immediate remaining goal is a single clear owner for persistence and safe migration of existing state, not a broader engine rewrite.
+Future changes to those areas should be driven by separate requirements or observed defects.
 
-## Target architecture
+## Current architecture
 
 ```text
               GitHub Pages / HTTPS
@@ -325,4 +244,4 @@ The immediate remaining goal is a single clear owner for persistence and safe mi
                           bank-specific state
 ```
 
-The GitHub Pages migration has addressed the browser-origin problem. The remaining persistence refactor addresses the application-architecture problem.
+GitHub Pages provides the normal-use browser origin. `index.html` owns bank-source bootstrap. `app.js` owns canonical bank/version training state. Export/import provides explicit portability between browser origins.
