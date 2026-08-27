@@ -1,4 +1,4 @@
-const STORAGE_KEY='secai-plus-test-engine-v2';
+const STORAGE_KEY_PREFIX='secai-plus-test-engine-v2';
 const SUPPORTED_SCHEMA_VERSION=1;
 const DEFAULT_QUESTION_COUNT=60;
 const LEGACY_PRODUCTION_BANK={bankId:'secai-plus-cy0-001-v1',bankVersion:'1.0.0'};
@@ -28,7 +28,6 @@ function init(){
     const loaded=loadStoredState();
     state=loaded.state;
     active=state.activeAttempt||null;
-    if(loaded.mismatch){renderBankMismatch(loaded.mismatch);return;}
     clearError();setControlsDisabled(false);renderHome();
   }catch(error){renderFatalError(error.message);}
 }
@@ -66,17 +65,31 @@ function defaultState(){
   return{version:2,bankId:bankConfig.bankId,bankVersion:bankConfig.bankVersion,settings:{questionCount:Math.min(DEFAULT_QUESTION_COUNT,bank.length),durationMinutes:60,includeMastered:false},mastery:{},attempts:[],activeAttempt:null};
 }
 
+function progressStorageKey(){return`${STORAGE_KEY_PREFIX}:${bankConfig.bankId}:${bankConfig.bankVersion}`;}
+
 function loadStoredState(){
   const fallback=defaultState();
-  try{
-    const raw=JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(!raw)return{state:fallback,mismatch:null};
-    const normalized=normalizeStateIdentity(raw,true);
-    if(normalized.bankId!==bankConfig.bankId||normalized.bankVersion!==bankConfig.bankVersion){
-      return{state:fallback,mismatch:{storedBankId:normalized.bankId,storedBankVersion:normalized.bankVersion}};
+  const canonical=readCompatibleStoredState(progressStorageKey());
+  if(canonical)return{state:canonical};
+  const legacyKeys=[`${STORAGE_KEY_PREFIX}:${bankConfig.bankId}`,STORAGE_KEY_PREFIX];
+  for(const key of legacyKeys){
+    const migrated=readCompatibleStoredState(key);
+    if(migrated){
+      localStorage.setItem(progressStorageKey(),JSON.stringify(migrated));
+      return{state:migrated};
     }
-    return{state:mergeState(normalized),mismatch:null};
-  }catch{return{state:fallback,mismatch:null};}
+  }
+  return{state:fallback};
+}
+
+function readCompatibleStoredState(key){
+  try{
+    const serialized=localStorage.getItem(key);
+    if(!serialized)return null;
+    const normalized=normalizeStateIdentity(JSON.parse(serialized),false);
+    if(normalized.bankId!==bankConfig.bankId||normalized.bankVersion!==bankConfig.bankVersion)return null;
+    return mergeState(normalized);
+  }catch{return null;}
 }
 
 function normalizeStateIdentity(raw,allowLegacy){
@@ -134,7 +147,7 @@ function saveState(){
   state.bankId=bankConfig.bankId;
   state.bankVersion=bankConfig.bankVersion;
   state.activeAttempt=active;
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  localStorage.setItem(progressStorageKey(),JSON.stringify(state));
 }
 
 function bind(){
@@ -166,15 +179,6 @@ function renderHome(){
   const mastered=bank.filter(question=>masteryFor(question.id).mastered).length;
   const attempts=state.attempts||[];
   $('history-summary').innerHTML=`<strong>${bank.length}</strong> questions · <strong>${mastered}</strong> mastered · <strong>${bank.length-mastered}</strong> remaining · <strong>${attempts.length}</strong> completed run${attempts.length===1?'':'s'}`;
-}
-
-function renderBankMismatch(mismatch){
-  blocked=true;
-  clearInterval(ticker);showView('start-view');renderBankSummary();setControlsDisabled(true);$('resume-btn').hidden=true;
-  $('history-summary').innerHTML=`<strong>${bank.length}</strong> questions are loaded for the current bank. Stored progress cannot be reused until you reset it for this bank.`;
-  const loadedLabel=`${bankConfig.title} (${bankConfig.bankId} v${bankConfig.bankVersion})`;
-  const storedLabel=`${mismatch.storedBankId} v${mismatch.storedBankVersion}`;
-  showErrorHtml(`<strong>Stored progress belongs to a different question bank.</strong><br>Loaded bank: ${escapeHtml(loadedLabel)}<br>Stored progress: ${escapeHtml(storedLabel)}<br>Reset local progress to initialize this bank.`,{id:'reset-bank-mismatch',label:'Reset Progress For This Bank',className:'danger',onclick:()=>resetProgress(false)});
 }
 
 function renderFatalError(message){
@@ -365,7 +369,7 @@ async function importProgress(event){
 
 function resetProgress(confirmReset){
   if(confirmReset&&!confirm('Delete all locally stored attempts, mastery, settings, and active progress for this bank?'))return;
-  localStorage.removeItem(STORAGE_KEY);blocked=false;state=defaultState();active=null;currentResult=null;saveState();clearError();setControlsDisabled(false);renderHome();
+  localStorage.removeItem(progressStorageKey());blocked=false;state=defaultState();active=null;currentResult=null;saveState();clearError();setControlsDisabled(false);renderHome();
 }
 
 function clampQuestionCount(requested,maxAllowed){
