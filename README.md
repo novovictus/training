@@ -6,6 +6,12 @@ Independent record documenting the development and validation of a personal SecA
 
 This repository records design decisions, implementation details, validation methods, and independently authored training content. It is published as an engineering note and project history, not as an official study guide, commercial training product, or vendor-affiliated resource.
 
+## Project status
+
+Development of this repository by the original author concluded on September 3, 2026. The repository is preserved as a historical snapshot of the independently developed SecAI+ study and assessment project as it existed on September 3, 2026.
+
+This repository remains publicly available under its existing license. Independent forks are not maintained, reviewed, endorsed, or supervised by the original author.
+
 ## Current state
 
 - The practice test is deployed as a live GitHub Pages project site.
