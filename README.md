@@ -10,7 +10,7 @@ This repository records design decisions, implementation details, validation met
 
 Development of this repository by the original author concluded on September 3, 2026. The repository is preserved as a historical snapshot of the independently developed SecAI+ study and assessment project as it existed on September 3, 2026.
 
-This repository remains publicly available under its existing license. Independent forks are not maintained, reviewed, endorsed, or supervised by the original author.
+Independent forks and derivative works may continue under the licenses described below. They are not maintained, reviewed, endorsed, or supervised by the original author.
 
 ## Current state
 
@@ -25,15 +25,17 @@ This repository remains publicly available under its existing license. Independe
 - `test-banks/secai-plus-minimal-independent-bank-v1.js` is the independent validation bank.
 - `test-banks/` also contains deterministic application fixtures used for engine validation.
 
-## Legal notice
+## License and legal notice
 
-Copyright © 2026 novovictus. All rights reserved.
+Copyright © 2026 novovictus.
 
-The included questions and supporting content are independently authored working material and are subject to continuing technical review.
+Source code in this repository is licensed under the MIT License.
+
+Independently authored question banks, documentation, and other training content are licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0), unless otherwise noted.
+
+These licenses apply to material authored by novovictus and do not grant rights in third-party trademarks or other third-party intellectual property.
 
 CompTIA and SecAI+ are trademarks of CompTIA, Inc. This project is independent and is not affiliated with, sponsored by, or endorsed by CompTIA.
-
-No license is granted to copy, modify, redistribute, publish, or commercially use the contents of this repository except as otherwise permitted by law or by written authorization from the copyright holder.
 
 ## Live application
 
@@ -165,7 +167,7 @@ The named source of record is `test-banks/secai-plus-cy0-001-diagnostic-v2.js`.
 - `test-banks/secai-plus-cy0-001-terminology-drill-bank-v1.js`: terminology-focused drill bank, 195 questions.
 - `test-banks/secai-plus-minimal-independent-bank-v1.js`: independent validation bank, 60 questions.
 
-All banks are working self-validation content. Validate stems, distractors, answer keys, targets, and mappings during use and revise under zero-trust review.
+All banks are working self-validation content as preserved in the September 3, 2026 historical snapshot.
 
 Displayed answer choices are randomized during each run.
 
